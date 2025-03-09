@@ -11,8 +11,13 @@ const url = require('url');
 // rss dependencies
 const RSS = require("rss");
 
+
+
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files
+const RSS_FILE_DIR = path.join(__dirname, 'rss'); // Directory to stored game files
+
+
 
 
 
@@ -54,9 +59,9 @@ function handleFileServerRequests(req, res) {
                 res.end('File not found');
                 console.log("couldn't find file: ", filePath);
             } else {
-                res.writeHead(200, GetContentHeaders());
+                res.writeHead(200, GetContentHeaders(filePath));
                 res.end(data);
-                console.log("sent file: ", filePath, "with headers", GetContentHeaders());
+                console.log("sent file: ", filePath, "with headers", GetContentHeaders(filePath));
             }
         });
     }
@@ -71,28 +76,53 @@ function handleFileServerRequests(req, res) {
 
         // HANDLE POSTING TO THE RSS FEED 
 
-        // Write data to file
+        // collects packets in their chunks, concatenates into body 
         let body = '';
         req.on('data', chunk => {
             body += chunk;
         });
 
+
+        
         req.on('end', () => {
-            fs.writeFile(filePath, body, err => {
-                if (err) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Error writing file');
-                } else {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('File saved');
-                }
-            });
+            // once at the end of the post body, parse it to an object 
+            var data = JSON.parse(body);
+            console.log("got data:", data);
+            // adds the sender so we can referance it later if needed for a reply. 
+            data["sender"] = req;
+            
+            // if it has a request type try match the request type
+            switch (data["type"]) {
+                case "createRSS":
+                    if(CreateRSS(data))
+                        respondWithMessage("completed");
+                    else
+                        respondWithError("failed to create rss");
+                    break;
+                default:
+                    respondWithError("error");
+                    break;
+            }
         });
     }
 
-    // helper function to send the right response headers based on the content
-    function GetContentHeaders() {
-        let match = filePath.match(/\.[\w.]+$/)[0]; // gets the file extention matches extentions with 2 "." just need to add it as a case
+
+
+
+
+    // enables response wtih post requests 
+    function respondWithMessage(message) {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(message);
+    }
+    function respondWithError(message) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end(`error: ${message}`);
+    }
+
+    // helper function to send the right response headers based on the content's file extention 
+    function GetContentHeaders(target) {
+        let match = target.match(/\.[\w.]+$/)[0]; // gets the file extention matches extentions with 2 "." just need to add it as a case
         //console.log(match);
         switch (match) {
             case ".html": return { 'Content-Type': 'text/html; charset=UTF-8' };
@@ -106,4 +136,63 @@ function handleFileServerRequests(req, res) {
             default: return { 'Content-Type': 'text/plain' };
         }
     }
+}
+
+
+
+
+
+
+function CreateRSS(reqData){
+    var data = reqData["data"]; 
+
+
+    if(!data)
+        return false; 
+
+    // pulls the origin from the sender (passed into the reqData obj earlier)
+    const origin = reqData.sender.headers.origin; 
+    console.log(origin);
+    var rssFilePath = path.join(RSS_FILE_DIR, data["feed_url"].replace(`${origin}/rss/`, "")); // Remove leading "/rss/"
+
+    CreateNewFeed(data); 
+
+    fs.writeFile(rssFilePath, JSON.stringify(data), (err)=> { if(err){console.error(err);} }); 
+    return true;
+}
+
+
+
+
+/*
+feedOptions = {
+    title:              string Title of your site or feed
+    description:        optional string A short description of the feed.
+    generator:          optional string Feed generator.
+    feed_url:           url string Url to the rss feed.
+    site_url:           url string Url to the site that the feed is for.
+    image_url:          optional url string Small image for feed readers to use.
+    docs:               optional url string Url to documentation on this feed.
+    managingEditor:     optional string Who manages content in this feed.
+    webMaster:          optional string Who manages feed availability and technical support.
+    copyright:          optional string Copyright information for this feed.
+    language:           optional string The language of the content of this feed.
+    categories:         optional array of strings One or more categories this feed belongs to.
+    pubDate:            optional Date object or date string The publication date for content in the feed
+    ttl:                optional integer Number of minutes feed can be cached before refreshing from source.
+    hub:                optional PubSubHubbub hub url Where is the PubSubHub hub located.
+    custom_namespaces:  optional object Put additional namespaces in element (without 'xmlns:' prefix)
+    custom_elements:    optional array Put additional elements in the feed (node-xml syntax)
+}
+*/
+
+
+const rssFeeds = [];
+
+function CreateNewFeed(feedOptions) {
+
+    var feed = new RSS(feedOptions);
+    rssFeeds.push(feed);
+
+    console.log("added new rssfeed to array"); 
 }
