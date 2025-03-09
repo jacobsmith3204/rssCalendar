@@ -1,14 +1,43 @@
 <!DOCTYPE html>
-<head>
-    <script src="/client.js"></script>
+<html>
+    <head>
+        <title>rssCalendar</title>
+    
+        <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+        <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+        
+        <script src="/client.js"></script>
+        <script src="/googleCalendarIntergration.js"></script>
+    
+        <meta charset="utf-8" />
+    </head> 
+    <body>
+    
+        hello world!
+    
+        <button onclick="PressedButton()"> Create RSS Feed</button>
+        
+        <br>
+        <br>
+    
+    
+    
 
-</head> 
-<body>
+    
+        <p>Google Calendar API Quickstart</p>
+    
+        <!--Add buttons to initiate auth sequence and sign out (HIDDEN BY DEFAULT)-->
 
-    hello world!
+      
 
-    <button onclick="PressedButton()"> Create RSS Feed</button>
+        <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+        <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
+    
+        <pre id="content" style="white-space: pre-wrap;"></pre>
 
-
-
-</body>
+        <script>
+            document.getElementById('authorize_button').style.visibility = 'hidden';
+            document.getElementById('signout_button').style.visibility = 'hidden';
+        </script>
+    </body>
+</html>
