@@ -53,7 +53,25 @@ function handleFileServerRequests(req, res) {
     // 
     function HandleGet() {
         console.log("using method: ", req.method);
-        fs.readFile(filePath, (err, data) => {
+
+        if(req.url.startsWith("/rss/"))
+        {
+            const rssFilePath = path.join(RSS_FILE_DIR, parsedUrl.pathname.replace(`/rss/`, "")); // Remove leading "/rss/"
+            fs.readFile(rssFilePath, function RSSFile(err, data) {
+                if (err) {
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                    res.end('File not found');
+                    console.log("couldn't find file: ", filePath);
+                } else {
+                    res.writeHead(200, GetContentHeaders(filePath));
+                    res.end(data);
+                    console.log("sent file: ", filePath, "with headers", GetContentHeaders(filePath));
+                }
+            });
+            return;
+        }
+
+        fs.readFile(filePath, function NormalFile(err, data) {
             if (err) {
                 res.writeHead(404, { 'Content-Type': 'text/plain' });
                 res.end('File not found');
@@ -65,6 +83,8 @@ function handleFileServerRequests(req, res) {
             }
         });
     }
+
+
     // 
     function HandleExceptions() {
         console.log("couldn't handle", req.method);
@@ -94,10 +114,11 @@ function handleFileServerRequests(req, res) {
             // if it has a request type try match the request type
             switch (data["type"]) {
                 case "createRSS":
-                    if(CreateRSS(data))
+                    var response = CreateRSS(data);
+                    if(!response.error)
                         respondWithMessage("completed");
                     else
-                        respondWithError("failed to create rss");
+                        respondWithError(`failed to create rss ${response.error}`);
                     break;
                 default:
                     respondWithError("error");
@@ -132,6 +153,7 @@ function handleFileServerRequests(req, res) {
             case ".jpg": return { 'Content-Type': 'image/jpg' };
             case ".webp": return { 'Content-Type': 'image/webp' };
             case ".js": return { 'Content-Type': 'application/javascript' };
+            case ".xml": return {'Content-Type': 'application/xml'};
             case ".mp3": return { 'Content-Type': 'audio/mpeg', 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=31536000, immutable', };
             default: return { 'Content-Type': 'text/plain' };
         }
@@ -148,17 +170,21 @@ function CreateRSS(reqData){
 
 
     if(!data)
-        return false; 
+        return {error: `no data in reqData["data"] `}; 
 
     // pulls the origin from the sender (passed into the reqData obj earlier)
     const origin = reqData.sender.headers.origin; 
     console.log(origin);
-    var rssFilePath = path.join(RSS_FILE_DIR, data["feed_url"].replace(`${origin}/rss/`, "")); // Remove leading "/rss/"
+    var rssFilePath = path.join(RSS_FILE_DIR, data["feed_url"].replace(`${origin}/rss/`, "")); // Remove leading "[http://localhost:8000]/rss/"
+    var rssFeed; 
 
-    CreateNewFeed(data); 
-
-    fs.writeFile(rssFilePath, JSON.stringify(data), (err)=> { if(err){console.error(err);} }); 
-    return true;
+    if(rssFeed = CreateNewFeed(data)){
+        fs.writeFile(`${rssFilePath}`, rssFeed.xml() , (err)=> { if(err){console.error(err);} }); 
+        return {message:"success"};
+    }
+    else {
+        return {error: `file may already exist`};  
+    }
 }
 
 
@@ -187,12 +213,19 @@ feedOptions = {
 */
 
 
-const rssFeeds = [];
+const rssFeeds = {};
 
 function CreateNewFeed(feedOptions) {
 
+    const title = feedOptions.title; 
+    if(rssFeeds[title]){
+        console.log(`feed ${title} already exists`); 
+        return;
+    }
     var feed = new RSS(feedOptions);
-    rssFeeds.push(feed);
+    rssFeeds[title] = feed;
 
-    console.log("added new rssfeed to array"); 
+    console.log(`added new rssFeed ${title} `); 
+    return feed; 
+    
 }

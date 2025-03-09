@@ -3,7 +3,7 @@ const rssFeedObj = {
     title: "facebook", 
     description: "attempted to create a custom rss feed titled 'facebook'", 
 
-    feed_url: `${location.origin}/rss/facebook`, 
+    feed_url: `${location.origin}/rss/facebook.xml`, 
     site_url: `${location}`
 }
 
