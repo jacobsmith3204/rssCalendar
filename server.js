@@ -9,7 +9,7 @@ const path = require('path');
 const url = require('url');
 
 // rss dependencies
-//const RSS = require("rss");
+const RSS = require("rss");
 
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files
@@ -44,7 +44,7 @@ function handleFileServerRequests(req, res) {
             break;
     }
 
-    
+
     // 
     function HandleGet() {
         console.log("using method: ", req.method);
@@ -107,5 +107,3 @@ function handleFileServerRequests(req, res) {
         }
     }
 }
-
-
