@@ -5,14 +5,10 @@
       /* exported handleSignoutClick */
 
 
-
-
-      // TODO(developer): Set to client ID and API key from the Developer Console
       const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
       const API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
 
-
-      console.log(CLIENT_ID); 
+      console.assert((CLIENT_ID && API_KEY), `.env not setup properly CLIENT_ID:${CLIENT_ID}, API_KEY${API_KEY}`); 
 
       // Discovery doc URL for APIs used by the quickstart
       const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
