@@ -10,6 +10,7 @@ const url = require('url');
 
 // rss dependencies
 const RSS = require("rss");
+const { debug } = require('console');
 
 
 
@@ -20,144 +21,178 @@ const RSS_FILE_DIR = path.join(__dirname, 'rss'); // Directory to stored game fi
 
 
 
-
-// starts a simple file server
-const server = http.createServer(handleFileServerRequests);
+const contexts = {};
+// starts the http server
+const server = http.createServer(function handleServerRequests(req, res) {
+    // handles the server requests, finds the closest matching context class instance from 'contexts' and uses it to handle the server
+    console.log("new http request... ")
+    var client = new TcpClient(req, res);
+    var context = server.findContext(client.url.pathname);
+    context.Handle(client);
+});
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/index.html`);
+    // adds contexts to handle the different request types. 
+    contexts["/rss"] = new RSSHandler();
+    contexts["/"] = new FileHandler();
 });
 console.log("Started file server");
 
 
 
 
+//#region additional server functionality
+// adds a way to search for and find a matching context within the defined context dictionary 
+server.findContext = function findContext(target) {
+    var closestMatch = 0;
+    var closestVal = 100000;
+    var currentVal;
 
-// handles the file server requests
-function handleFileServerRequests(req, res) {
-    const parsedUrl = url.parse(req.url, true);
-    const filePath = path.join(WEBSITE_FILE_DIR, parsedUrl.pathname.substring(1)); // Remove leading "/"
-    // 
-    switch (req.method) {
-        case 'GET':
-            HandleGet();
-            break;
-        case 'POST':
-            HandlePost();
-            break;
-        default:
-            HandleExceptions();
+    var contextKeys = Object.keys(contexts);
+    for (let i = 0; i < contextKeys.length; i++) {
+        currentVal = levenshtein(target, contextKeys[i]);
+        //console.log("testing: ", target ,"against", contextKeys[i], "result", currentVal); 
+        if (currentVal < closestVal) {
+            closestMatch = i;
+            closestVal = currentVal;
+        }
+        if (closestVal == 0)
             break;
     }
+    //console.log("closest context with val: ",  closestVal, contextKeys[closestMatch]); 
+    return Object.values(contexts)[closestMatch];
 
+    // function to find closest matching string 
+    function levenshtein(a, b) {
+        // 
+        if (a === b) return 0;
+        if (!a.startsWith(b))
+            return 100000;
+        // should have already filtered out most case by here. 
+        const matrix = Array(a.length + 1)
+            .fill(null)
+            .map(() => Array(b.length + 1).fill(null));
 
-    // 
-    function HandleGet() {
-        console.log("using method: ", req.method);
+        for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+        for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
 
-        if(req.url.startsWith("/rss/"))
-        {
-            const rssFilePath = path.join(RSS_FILE_DIR, parsedUrl.pathname.replace(`/rss/`, "")); // Remove leading "/rss/"
-            fs.readFile(rssFilePath, function RSSFile(err, data) {
-                if (err) {
-                    res.writeHead(404, { 'Content-Type': 'text/plain' });
-                    res.end('File not found');
-                    console.log("couldn't find file: ", filePath);
-                } else {
-                    res.writeHead(200, GetContentHeaders(filePath));
-                    res.end(data);
-                    console.log("sent file: ", filePath, "with headers", GetContentHeaders(filePath));
-                }
-            });
-            return;
+        for (let i = 1; i <= a.length; i++) {
+            for (let j = 1; j <= b.length; j++) {
+                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,    // Deletion
+                    matrix[i][j - 1] + 1,    // Insertion
+                    matrix[i - 1][j - 1] + cost // Substitution
+                );
+            }
         }
+        return matrix[a.length][b.length];
+    }
+}
+server.GetContentHeaders = (target) => {
+    if (!target)
+        return { 'Content-Type': 'text/plain' };
 
+    let match = target.match(/\.[\w.]+$/)[0]; // gets the file extention matches extentions with 2 "." just need to add it as a case
+    //console.log(match);
+    switch (match) {
+        case ".html": return { 'Content-Type': 'text/html; charset=UTF-8' };
+        case ".css": return { 'Content-Type': 'text/css' };
+        case ".ico": return { 'Content-Type': 'image' };
+        case ".png": return { 'Content-Type': 'image/png' };
+        case ".jpg": return { 'Content-Type': 'image/jpg' };
+        case ".webp": return { 'Content-Type': 'image/webp' };
+        case ".js": return { 'Content-Type': 'application/javascript' };
+        case ".xml": return { 'Content-Type': 'application/xml' };
+        case ".mp3": return { 'Content-Type': 'audio/mpeg', 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=31536000, immutable', };
+        default: return { 'Content-Type': 'text/plain' };
+    }
+}
+//#endregion
+
+
+
+
+
+
+// a reprentation of a user/client.Request can be passed through the diffent methods.
+// contains the http request and response objects to comunicate back to the client, in adition to some functionality to simplify basic responses. 
+class TcpClient {
+    constructor(req, res) {
+        this.req = req; //request data 
+        this.res = res; //response endpoint to finish the message
+        this.url = url.parse(req.url, true);
+    }
+
+    SendResponse(code, data, headers) {
+        if (!headers)
+            headers = server.GetContentHeaders();
+        this.res.writeHead(code, headers);
+        this.res.end(data);
+    }
+
+    SendFile(filePath) {
+        console.log("sending file", filePath);
         fs.readFile(filePath, function NormalFile(err, data) {
             if (err) {
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('File not found');
+                this.SendResponse(404, 'File not found');
                 console.log("couldn't find file: ", filePath);
             } else {
-                res.writeHead(200, GetContentHeaders(filePath));
-                res.end(data);
-                console.log("sent file: ", filePath, "with headers", GetContentHeaders(filePath));
+                this.SendResponse(200, data, server.GetContentHeaders(filePath));
+                console.log("sent file: ", filePath, "with headers", server.GetContentHeaders(filePath));
             }
-        });
+        }.bind(this));
     }
+}
 
 
-    // 
-    function HandleExceptions() {
-        console.log("couldn't handle", req.method);
-        res.writeHead(405, { 'Content-Type': 'text/plain' });
-        res.end('Method Not Allowed');
-    }
-    // 
-    function HandlePost() {
-
-        // HANDLE POSTING TO THE RSS FEED 
-
-        // collects packets in their chunks, concatenates into body 
-        let body = '';
-        req.on('data', chunk => {
-            body += chunk;
-        });
-
-
-        
-        req.on('end', () => {
-            // once at the end of the post body, parse it to an object 
-            var data = JSON.parse(body);
-            console.log("got data:", data);
-            // adds the sender so we can referance it later if needed for a reply. 
-            data["sender"] = req;
-            
-            // if it has a request type try match the request type
-            switch (data["type"]) {
-                case "createRSS":
-                    var response = CreateRSS(data);
-                    if(!response.error)
-                        respondWithMessage("completed");
-                    else
-                        respondWithError(`failed to create rss ${response.error}`);
-                    break;
-                default:
-                    respondWithError("error");
-                    break;
-            }
-        });
-    }
-
-
-
-
-
-    // enables response wtih post requests 
-    function respondWithMessage(message) {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end(message);
-    }
-    function respondWithError(message) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end(`error: ${message}`);
-    }
-
-    // helper function to send the right response headers based on the content's file extention 
-    function GetContentHeaders(target) {
-        let match = target.match(/\.[\w.]+$/)[0]; // gets the file extention matches extentions with 2 "." just need to add it as a case
-        //console.log(match);
-        switch (match) {
-            case ".html": return { 'Content-Type': 'text/html; charset=UTF-8' };
-            case ".css": return { 'Content-Type': 'text/css' };
-            case ".ico": return { 'Content-Type': 'image' };
-            case ".png": return { 'Content-Type': 'image/png' };
-            case ".jpg": return { 'Content-Type': 'image/jpg' };
-            case ".webp": return { 'Content-Type': 'image/webp' };
-            case ".js": return { 'Content-Type': 'application/javascript' };
-            case ".xml": return {'Content-Type': 'application/xml'};
-            case ".mp3": return { 'Content-Type': 'audio/mpeg', 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=31536000, immutable', };
-            default: return { 'Content-Type': 'text/plain' };
+// barebones handler, extend from this for new contexts/applications
+class BaseHandler {
+    // gives some handles to override in the subclasses
+    Handle(client) {
+        switch (client.req.method) {
+            case 'GET':
+                this.HandleGet(client);
+                break;
+            case 'POST':
+                // waits till we have all the data concatinated before calling handlePost 
+                client.body = '';
+                client.req.on('data', chunk => client.body += chunk);
+                client.req.on('end', function () { this.HandlePost(client) }.bind(this));
+                break;
+            default:
+                this.HandleExceptions(client);
+                break;
         }
     }
+
+    // overrideable functions for the subsclasses 
+    HandleGet(client) {
+        console.error("'HandleGet' not implemented for", this.constructor.name);
+        client.SendResponse(405, 'Method Not Allowed');
+    }
+    HandlePost(client) {
+        console.error("'HandlePost' not implemented for", this.constructor.name);
+        client.SendResponse(405, 'Method Not Allowed');
+    }
+    HandleExceptions(client) {
+        console.log("couldn't handle", req.method);
+        client.SendResponse(405, 'Method Not Allowed');
+    }
+}
+
+
+
+
+
+
+// the simplified http file server, on a get request finds the file 
+// (access limited to the website_file_dir, with access to all the subfiles via their path in the request url)
+class FileHandler extends BaseHandler {
+    HandleGet(client) {
+        const filePath = path.join(WEBSITE_FILE_DIR, client.url.pathname.substring(1)); // Remove leading "/"
+        client.SendFile(filePath);
+    }
 }
 
 
@@ -165,30 +200,79 @@ function handleFileServerRequests(req, res) {
 
 
 
-function CreateRSS(reqData){
-    var data = reqData["data"]; 
 
 
-    if(!data)
-        return {error: `no data in reqData["data"] `}; 
-
-    // pulls the origin from the sender (passed into the reqData obj earlier)
-    const origin = reqData.sender.headers.origin; 
-    console.log(origin);
-    var rssFilePath = path.join(RSS_FILE_DIR, data["feed_url"].replace(`${origin}/rss/`, "")); // Remove leading "[http://localhost:8000]/rss/"
-    var rssFeed; 
-
-    if(rssFeed = CreateNewFeed(data)){
-        fs.writeFile(`${rssFilePath}`, rssFeed.xml() , (err)=> { if(err){console.error(err);} }); 
-        return {message:"success"};
+// a http server handler for our rss implementation 
+// handles some http GET requests for the RSS/[feed].xml objects. 
+// handles post requests for adding new RSS feeds. 
+class RSSHandler extends BaseHandler {
+    constructor() {
+        super();
+        this.rssFeeds = {};
+        // !! this should probably load in the existing RSS feeds from the 'RSS_FILE_DIR' location
     }
-    else {
-        return {error: `file may already exist`};  
+
+    // sends the rss/feed.xml file back 
+    HandleGet(client) {
+        const rssFilePath = path.join(RSS_FILE_DIR, parsedUrl.pathname.replace(`/rss/`, "")); // Remove leading "/rss/"
+        client.SendFile(rssFilePath);
+        return;
+    }
+    // HANDLE POSTING TO THE RSS FEED 
+    HandlePost(client) {
+        // once at the end of the post body, parse it to an object 
+        var data = JSON.parse(client.body);
+        console.log("got data:", data);
+        // adds the sender so we can referance it later if needed for a reply. 
+
+        // if it has a request type try match the request type
+        switch (data["type"]) {
+            case "createRSS":
+                this.CreateRSS(client, data);
+                break;
+            default:
+                this.SendResponse(400, server.GetContentHeaders(), "error");
+                break;
+        }
+    }
+
+
+
+    CreateRSS(client, reqData) {
+        // validates their is request data
+        var data = reqData["data"];
+        if (!data)
+            return { error: `no data in reqData["data"] ` };
+
+        // pulls the origin from the sender (passed into the reqData obj earlier)
+        const origin = client.req.headers.origin;
+        console.log(origin);
+        var rssFilePath = path.join(RSS_FILE_DIR, data["feed_url"].replace(`${origin}/rss/`, "")); // Remove leading "[http://localhost:8000]/rss/"
+
+        // tries to create a new feed. is one already exists this will return null/undefined
+        const title = feedOptions.title;
+        if (this.rssFeeds[title]) {
+            console.log(`feed ${title} already exists`);
+            client.SendResponse(400, `failed to create rss: file already exists`);
+            return;
+        }
+        else {
+            var rssFeed = this.CreateNewFeed(data);
+            // writes the new rss feed object to file '.xml' format
+            fs.writeFile(`${rssFilePath}`, rssFeed.xml(), (err) => { if (err) { console.error(err); } });
+            client.SendResponse(200, "success");
+        }
+    }
+
+
+    CreateNewFeed(feedOptions) {
+        var feed = new RSS(feedOptions); // creates the feed 
+        this.rssFeeds[title] = feed; // adds the feed to the feeds object 
+
+        console.log(`added new rssFeed ${title}`);
+        return feed;
     }
 }
-
-
-
 
 /*
 feedOptions = {
@@ -211,21 +295,3 @@ feedOptions = {
     custom_elements:    optional array Put additional elements in the feed (node-xml syntax)
 }
 */
-
-
-const rssFeeds = {};
-
-function CreateNewFeed(feedOptions) {
-
-    const title = feedOptions.title; 
-    if(rssFeeds[title]){
-        console.log(`feed ${title} already exists`); 
-        return;
-    }
-    var feed = new RSS(feedOptions);
-    rssFeeds[title] = feed;
-
-    console.log(`added new rssFeed ${title} `); 
-    return feed; 
-    
-}

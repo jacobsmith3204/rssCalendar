@@ -34,7 +34,7 @@ feedOptions = {
 function PressedButton(){
     const xhr = new XMLHttpRequest(); 
 
-    xhr.open("POST", `${location.origin}`, true);
+    xhr.open("POST", `${location.origin}/rss`, true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     
     xhr.onreadystatechange = function () {
