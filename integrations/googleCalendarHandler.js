@@ -7,25 +7,12 @@
 
 
 
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
       // TODO(developer): Set to client ID and API key from the Developer Console
-      const CLIENT_ID = package.env.GOOGLE_CALENDAR_CLIENT_ID;
-      const API_KEY = package.env.GOOGLE_CALENDAR_API_KEY;
+      const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
+      const API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
+
+
+      console.log(CLIENT_ID); 
 
       // Discovery doc URL for APIs used by the quickstart
       const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
