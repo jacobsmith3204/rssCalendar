@@ -12,13 +12,13 @@ const url = require('url');
 // adds intergration contexts
 const {BaseHandler, TcpClient, AddContextHandlingToServer, contexts} = require('./integrations/tcpServer.js');
 const {RSSHandler} = require('./integrations/rssHandler.js');
-
+const {GoogleCalendarHandler, AssertEnv} = require('./integrations/googleCalendarHandler.js');
 
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files
 
 
-
+AssertEnv(); 
 
 // starts the http server
 const server = http.createServer(function handleServerRequests(req, res) {
