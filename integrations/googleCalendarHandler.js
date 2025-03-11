@@ -1,147 +1,104 @@
-
-/* exported gapiLoaded */
-/* exported gisLoaded */
-/* exported handleAuthClick */
-/* exported handleSignoutClick */
-
-
 const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 const API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
 
+const REDIRECT_URL = "http://localhost:8000/calendar";
 
-function AssertEnv(){
+//makes sure the above constants are assigned properly 
+function AssertEnv() {
   console.log("running assert");
   console.assert((CLIENT_ID && API_KEY), `.env not setup properly CLIENT_ID:${CLIENT_ID}, API_KEY${API_KEY}`);
 }
 
 // Discovery doc URL for APIs used by the quickstart
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+// allows the extention of the tcpserver basehandler so we can create a new handler
+const { BaseHandler } = require("./tcpServer.js");
+const url = require('url');
+// loads in the stuff from google
 
-// Authorization scopes required by the API; multiple scopes can be
-// included, separated by spaces.
-
-// checkout scopes here:  https://developers.google.com/calendar/api/auth
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
-
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
+const { google } = require('googleapis');
 
 
 
-/**
- * Callback after api.js is loaded.
- */
-function gapiLoaded() {
-  gapi.load('client', initializeGapiClient);
-}
+class CalendarHandler extends BaseHandler {
+  constructor() {
+    super();
 
-/**
- * Callback after the API client is loaded. Loads the
- * discovery doc to initialize the API.
- */
-async function initializeGapiClient() {
-  await gapi.client.init({
-    apiKey: API_KEY,
-    discoveryDocs: [DISCOVERY_DOC],
-  });
-  gapiInited = true;
-  maybeEnableButtons();
-}
-
-/**
- * Callback after Google Identity Services are loaded.
- */
-function gisLoaded() {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: '', // defined later
-  });
-  gisInited = true;
-  maybeEnableButtons();
-}
-
-/**
- * Enables user interaction after all libraries are loaded.
- */
-function maybeEnableButtons() {
-  if (gapiInited && gisInited) {
-    document.getElementById('authorize_button').style.visibility = 'visible';
+    // initalises a oauth2 obj
+    this.oauth2Client = new google.auth.OAuth2(
+      CLIENT_ID,
+      CLIENT_SECRET,
+      REDIRECT_URL + "/oauthcallback", 
+    );
+    // creates a google calendar instance with authentication. 
+    this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
+    // logs a login link for google to verify the user account. 
+    this.generateLoginURL();
   }
-}
 
-/**
- *  Sign in the user upon button click.
- */
-function handleAuthClick() {
-  tokenClient.callback = async (resp) => {
-    if (resp.error !== undefined) {
-      throw (resp);
+
+
+  handleGet(client) {
+    
+    //var path = client.url.pathname.replace("/calendar/", "");
+
+    const pathname = client.url.pathname.replace('/calendar/', '');
+    switch (pathname) {
+      case 'oauthcallback':
+        // 
+        console.log("using context oauthcallback, found queries:", JSON.stringify(client.queries));
+        this.attemptLogin(this.code = client.queries[code]); // do something here with the callback code 
+        break;
+      default:
+        console.error(`couldn't find pathname ${pathname}`);
+        break;
     }
-    document.getElementById('signout_button').style.visibility = 'visible';
-    document.getElementById('authorize_button').innerText = 'Refresh';
-    await listUpcomingEvents();
-  };
+  }
 
-  if (gapi.client.getToken() === null) {
-    // Prompt the user to select a Google Account and ask for consent to share their data
-    // when establishing a new session.
-    tokenClient.requestAccessToken({ prompt: 'consent' });
-  } else {
-    // Skip display of account chooser and consent dialog for an existing session.
-    tokenClient.requestAccessToken({ prompt: '' });
+
+  generateLoginURL(){
+    // Authorization scopes required by the API; multiple scopes can be included, separated by spaces.
+    // checkout scopes here:  https://developers.google.com/calendar/api/auth
+    const scope = ['https://www.googleapis.com/auth/calendar'];
+    
+    const authUrl = this.oauth2Client.generateAuthUrl({
+      access_type: "offline", // Required for refresh tokens
+      scope: scope,
+    });
+    console.log("Authorize this app by visiting this URL:", authUrl);
+  }
+
+  async attemptLogin(code) {
+    if(!code)
+      return;
+    // tries to get some sort of session token that it can use. (a handshake of some sort?) 
+    const tokens = await oauth2Client.getToken(this.code);
+    oauth2Client.setCredentials(tokens);
+  }
+
+  saveLogin() {
+
+  }
+
+  signOut() {
+
+  }
+
+  async listUpcomingEvents() {
+
+    const res = await this.calendar.events.list({
+      calendarId: "primary",
+      timeMin: new Date().toISOString(),
+      maxResults: 10,
+      singleEvents: true,
+      orderBy: "startTime",
+      //key: API_KEY, //?? not sure if i need this 
+    });
+    console.log("calendar events results", res);
+
   }
 }
 
-/**
- *  Sign out the user upon button click.
- */
-function handleSignoutClick() {
-  const token = gapi.client.getToken();
-  if (token !== null) {
-    google.accounts.oauth2.revoke(token.access_token);
-    gapi.client.setToken('');
-    document.getElementById('content').innerText = '';
-    document.getElementById('authorize_button').innerText = 'Authorize';
-    document.getElementById('signout_button').style.visibility = 'hidden';
-  }
-}
 
-/**
- * Print the summary and start datetime/date of the next ten events in
- * the authorized user's calendar. If no events are found an
- * appropriate message is printed.
- */
-async function listUpcomingEvents() {
-  let response;
-  try {
-    const request = {
-      'calendarId': 'primary',
-      'timeMin': (new Date()).toISOString(),
-      'showDeleted': false,
-      'singleEvents': true,
-      'maxResults': 10,
-      'orderBy': 'startTime',
-    };
-    response = await gapi.client.calendar.events.list(request);
-  } catch (err) {
-    document.getElementById('content').innerText = err.message;
-    return;
-  }
-
-  const events = response.result.items;
-  if (!events || events.length == 0) {
-    document.getElementById('content').innerText = 'No events found.';
-    return;
-  }
-  // Flatten to string to display
-  const output = events.reduce(
-    (str, event) => `${str}${event.summary} (${event.start.dateTime || event.start.date})\n`,
-    'Events:\n');
-  document.getElementById('content').innerText = output;
-}
-
-
-
-module.exports = {AssertEnv}
+module.exports = { AssertEnv, CalendarHandler }

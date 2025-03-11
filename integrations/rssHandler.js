@@ -22,7 +22,7 @@ class RSSHandler extends BaseHandler {
 
     // sends the rss/feed.xml file back 
     HandleGet(client) {
-        const rssFilePath = path.join(RSS_FILE_DIR, parsedUrl.pathname.replace(`/rss/`, "")); // Remove leading "/rss/"
+        const rssFilePath = path.join(RSS_FILE_DIR, client.url.pathname.replace(`/rss/`, "")); // Remove leading "/rss/"
         client.SendFile(rssFilePath);
         return;
     }
