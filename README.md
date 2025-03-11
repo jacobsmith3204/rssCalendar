@@ -14,3 +14,10 @@ GOOGLE_CALENDAR_API_KEY=[API_KEY]
 
 ## to run the server while in the main directory simply
 `node --env-file=.env server.js`
+
+
+
+### Relevant API documentation 
+
+google calendar (nodejs)
+  https://googleapis.dev/nodejs/googleapis/latest/calendar/index.html
