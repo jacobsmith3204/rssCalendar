@@ -3,7 +3,7 @@ console.log("starting... RSS Server")
 
 
 // http server dependencies  
-const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
@@ -12,7 +12,7 @@ const url = require('url');
 // adds intergration contexts
 const {BaseHandler, TcpClient, AddContextHandlingToServer, contexts} = require('./integrations/tcpServer.js');
 const {RSSHandler} = require('./integrations/rssHandler.js');
-const {GoogleCalendarHandler, AssertEnv} = require('./integrations/googleCalendarHandler.js');
+const {CalendarHandler, AssertEnv} = require('./integrations/googleCalendarHandler.js');
 
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files
@@ -21,7 +21,7 @@ const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored
 AssertEnv(); 
 
 // starts the http server
-const server = http.createServer(function handleServerRequests(req, res) {
+const server = https.createServer(function handleServerRequests(req, res) {
     // handles the server requests, finds the closest matching context class instance from 'contexts' and uses it to handle the server
     console.log("new http request... ")
     var client = new TcpClient(req, res);
@@ -33,6 +33,7 @@ server.listen(PORT, () => {
     // adds contexts to handle the different request types. 
     contexts["/rss"] = new RSSHandler();
     contexts["/"] = new FileHandler();
+    contexts["/calendar"] = new CalendarHandler(); 
 });
 console.log("Started file server");
 

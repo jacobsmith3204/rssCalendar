@@ -79,7 +79,16 @@ class TcpClient {
         this.req = req; //request data 
         this.res = res; //response endpoint to finish the message
         this.url = url.parse(req.url, true);
+
+        var split = this.url.query.split('&');
+        this.queries = {}
+
+        split.forEach((query => {
+          let split = query.split('=');
+          this.queries[split[0]] = split[0];
+        }).bind(this));
     }
+
 
     SendResponse(code, data, headers) {
         if (!headers)

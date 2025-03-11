@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "googleapis": "^146.0.0",
     "rss": "^1.2.2"
   }
 }
