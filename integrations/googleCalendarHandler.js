@@ -2,7 +2,7 @@ const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 const API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
 
-const REDIRECT_URL = "http://localhost:8000/calendar";
+const REDIRECT_URL = "https://localhost:8000/calendar/oauthcallback";
 
 //makes sure the above constants are assigned properly 
 function AssertEnv() {
@@ -29,7 +29,7 @@ class CalendarHandler extends BaseHandler {
     this.oauth2Client = new google.auth.OAuth2(
       CLIENT_ID,
       CLIENT_SECRET,
-      REDIRECT_URL + "/oauthcallback", 
+      REDIRECT_URL, 
     );
     // creates a google calendar instance with authentication. 
     this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
@@ -39,7 +39,7 @@ class CalendarHandler extends BaseHandler {
 
 
 
-  handleGet(client) {
+  HandleGet(client) {
     
     //var path = client.url.pathname.replace("/calendar/", "");
 
@@ -48,10 +48,12 @@ class CalendarHandler extends BaseHandler {
       case 'oauthcallback':
         // 
         console.log("using context oauthcallback, found queries:", JSON.stringify(client.queries));
-        this.attemptLogin(this.code = client.queries[code]); // do something here with the callback code 
+        this.attemptLogin(client.queries["code"]); // do something here with the callback code 
+        client.SendResponse(200, "success");
         break;
       default:
         console.error(`couldn't find pathname ${pathname}`);
+        client.SendResponse(500, "couldnt find correct action");
         break;
     }
   }
@@ -73,8 +75,8 @@ class CalendarHandler extends BaseHandler {
     if(!code)
       return;
     // tries to get some sort of session token that it can use. (a handshake of some sort?) 
-    const tokens = await oauth2Client.getToken(this.code);
-    oauth2Client.setCredentials(tokens);
+    const tokens = await this.oauth2Client.getToken(code);
+    this.oauth2Client.setCredentials(tokens); 
   }
 
   saveLogin() {

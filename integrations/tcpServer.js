@@ -3,12 +3,12 @@ const url = require('url');
 
 
 const contexts = {};
-function AddContextHandlingToServer(server){
+function AddContextHandlingToServer(server) {
     server.findContext = function findContext(target) {
         var closestMatch = 0;
         var closestVal = 100000;
         var currentVal;
-    
+
         var contextKeys = Object.keys(contexts);
         for (let i = 0; i < contextKeys.length; i++) {
             currentVal = levenshtein(target, contextKeys[i]);
@@ -22,7 +22,7 @@ function AddContextHandlingToServer(server){
         }
         //console.log("closest context with val: ",  closestVal, contextKeys[closestMatch]); 
         return Object.values(contexts)[closestMatch];
-    
+
         // function to find closest matching string 
         function levenshtein(a, b) {
             // 
@@ -33,10 +33,10 @@ function AddContextHandlingToServer(server){
             const matrix = Array(a.length + 1)
                 .fill(null)
                 .map(() => Array(b.length + 1).fill(null));
-    
+
             for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
             for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
-    
+
             for (let i = 1; i <= a.length; i++) {
                 for (let j = 1; j <= b.length; j++) {
                     const cost = a[i - 1] === b[j - 1] ? 0 : 1;
@@ -49,7 +49,7 @@ function AddContextHandlingToServer(server){
             }
             return matrix[a.length][b.length];
         }
-    } 
+    }
 }
 
 function GetContentHeaders(target) {
@@ -79,14 +79,7 @@ class TcpClient {
         this.req = req; //request data 
         this.res = res; //response endpoint to finish the message
         this.url = url.parse(req.url, true);
-
-        var split = this.url.query.split('&');
-        this.queries = {}
-
-        split.forEach((query => {
-          let split = query.split('=');
-          this.queries[split[0]] = split[0];
-        }).bind(this));
+        this.queries = this.url.query; 
     }
 
 
@@ -147,4 +140,4 @@ class BaseHandler {
     }
 }
 
-module.exports = {BaseHandler, TcpClient, AddContextHandlingToServer, contexts, GetContentHeaders}
+module.exports = { BaseHandler, TcpClient, AddContextHandlingToServer, contexts, GetContentHeaders }
