@@ -58,4 +58,18 @@ while in the main directory simply
   
 # Other Relevant API documentation 
 ### google calendar (nodejs)
+  (the nodejs api documentation is actually kinda terrible, it focuses on a blogger integration)  
   https://googleapis.dev/nodejs/googleapis/latest/calendar/index.html
+
+### instagram : instagram-private-api 
+  api for posting to Instagram, the tutorial is relatively straightforward.  
+  https://www.ryancarmody.dev/blog/how-to-automate-instagram-posts-with-nodejs
+
+### facebook : facebook-chat-api
+options  
+1. no official support for group chat messages, so this git repo is probably the simplest way to do it.   
+  https://github.com/Schmavery/facebook-chat-api  
+2. The other option I've been considering is posting to the Facebook page and then sharing it from there to the group chat. 
+  https://developers.facebook.com/docs/pages-api/posts/  
+  https://developers.facebook.com/docs/messenger-platform/send-messages/
+  
