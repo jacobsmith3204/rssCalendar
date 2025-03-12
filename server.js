@@ -59,3 +59,10 @@ class FileHandler extends BaseHandler {
         client.SendFile(filePath);
     }
 }
+
+
+/*
+todo: expose google oauth url to the website, 
+allow the app to remember the verification code of registered users. 
+then expose some functionallity to add events or interact with a linked google calendar through the web interface. 
+*/

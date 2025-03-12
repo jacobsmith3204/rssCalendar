@@ -13,7 +13,7 @@ function AssertEnv() {
 // Discovery doc URL for APIs used by the quickstart
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 // allows the extention of the tcpserver basehandler so we can create a new handler
-const { BaseHandler } = require("./tcpServer.js");
+const { BaseHandler, GetContentHeaders } = require("./tcpServer.js");
 const url = require('url');
 // loads in the stuff from google
 
@@ -34,7 +34,7 @@ class CalendarHandler extends BaseHandler {
     // creates a google calendar instance with authentication. 
     this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     // logs a login link for google to verify the user account. 
-    this.generateLoginURL();
+    //this.generateLoginURL();
   }
 
 
@@ -49,14 +49,32 @@ class CalendarHandler extends BaseHandler {
         // 
         console.log("using context oauthcallback, found queries:", JSON.stringify(client.queries));
         this.attemptLogin(client.queries["code"]); // do something here with the callback code 
-        client.SendResponse(200, "success");
+        client.SendResponse(200, this.onSuccess, GetContentHeaders(".html"));
         break;
+      case 'startoauth':
+        var oauthurl = this.generateLoginURL();
+        client.SendResponse(200, {oauthurl})
+      break; 
       default:
         console.error(`couldn't find pathname ${pathname}`);
         client.SendResponse(500, "couldnt find correct action");
         break;
     }
   }
+
+
+  onSuccess = `<!DOCTYPE html>
+    <html>
+      <body>
+        <h1> success </h1>
+        <script>
+          window.onbeforeunload = () => {
+            window.opener.postMessage("oauth successful", "*");
+          };
+          window.close(); 
+        </script>
+      </body>
+    </html>`
 
 
   generateLoginURL(){
@@ -69,6 +87,7 @@ class CalendarHandler extends BaseHandler {
       scope: scope,
     });
     console.log("Authorize this app by visiting this URL:", authUrl);
+    return authUrl; 
   }
 
   async attemptLogin(code) {

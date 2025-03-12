@@ -1,43 +1,84 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>rssCalendar</title>
-    
-        <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-        <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-        
-        <script src="/client.js"></script>
-        <!--script src="/googleCalendarIntergration.js"></script-->
-    
-        <meta charset="utf-8" />
-    </head> 
-    <body>
-    
-        hello world!
-    
-        <button onclick="PressedButton()"> Create RSS Feed</button>
-        
-        <br>
-        <br>
-    
-    
-    
 
-    
-        <p>Google Calendar API Quickstart</p>
-    
-        <!--Add buttons to initiate auth sequence and sign out (HIDDEN BY DEFAULT)-->
+<head>
+    <title>rssCalendar</title>
+    <script src="/client.js"></script>
+    <!--script src="/googleCalendarIntergration.js"></script-->
 
-      
+    <meta charset="utf-8" />
+</head>
 
-        <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-        <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
-    
-        <pre id="content" style="white-space: pre-wrap;"></pre>
+<body>
 
-        <script>
-            document.getElementById('authorize_button').style.visibility = 'hidden';
-            document.getElementById('signout_button').style.visibility = 'hidden';
-        </script>
-    </body>
+    hello world!
+
+    <button onclick="PressedButton()"> Create RSS Feed</button>
+
+    <br>
+    <br>
+
+
+
+
+
+    <p>Google Calendar API Quickstart</p>
+
+    <!--Add buttons to initiate auth sequence and sign out (HIDDEN BY DEFAULT)-->
+
+
+
+    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
+
+    <h1 id="authorized"> SUCCESSFULLY AUTHORISED</h1>
+
+
+    <pre id="content" style="white-space: pre-wrap;"></pre>
+
+    <script>
+
+        function handleAuthClick() {
+
+            fetch(`${location.origin}/calendar/startoauth`)
+                .then(response => response.json()).then(onData) // Parse JSON response
+                .catch(error => console.error(error)); // Handle errors
+
+
+            function onData(data) {
+                console.log(data);
+                var url = data["oauthurl"];
+                console.log(url);
+                if (url != undefined) {
+                    // catches when the created window is closed. 
+                    window.addEventListener("message", (event) => {
+                        console.log(event, "event data", event.data);
+                        if (event.data === "oauth successful") {
+                            console.log("closed window Sucessful Oauth");
+                            document.getElementById('authorized').style.visibility = 'visible';
+                            document.getElementById('authorize_button').style.visibility = 'hidden';
+                        }
+                        else {
+
+                            console.log("closed window");
+                        }
+                    });
+
+                    var redirect = window.open(url, "_blank");
+                    console.log("opening window");
+                }
+            }
+        }
+        function handleSignoutClick() {
+            // does nothing
+        }
+
+        //document.getElementById('authorize_button').style.visibility = 'hidden';
+        document.getElementById('signout_button').style.visibility = 'hidden';
+        document.getElementById('authorized').style.visibility = 'hidden';
+
+    </script>
+
+</body>
+
 </html>

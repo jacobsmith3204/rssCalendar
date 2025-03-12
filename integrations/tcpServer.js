@@ -87,6 +87,8 @@ class TcpClient {
         if (!headers)
             headers = GetContentHeaders();
         this.res.writeHead(code, headers);
+        if(typeof data === 'object' &&  !(data instanceof Buffer || data instanceof Uint8Array))
+            data = JSON.stringify(data);
         this.res.end(data);
     }
 
