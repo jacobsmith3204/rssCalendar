@@ -3,16 +3,15 @@ console.log("starting... RSS Server")
 
 
 // http server dependencies  
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const url = require('url');
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
 
-
-// adds intergration contexts
-const {BaseHandler, TcpClient, AddContextHandlingToServer, contexts} = require('./integrations/tcpServer.js');
-const {RSSHandler} = require('./integrations/rssHandler.js');
-const {CalendarHandler} = require('./integrations/googleCalendarHandler.js');
+// adds integration contexts
+import { BaseHandler, TcpClient, AddContextHandlingToServer, contexts } from './integrations/tcpServer';
+import { RSSHandler } from './integrations/rssHandler';
+import { CalendarHandler } from './integrations/googleCalendarHandler';
 
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files

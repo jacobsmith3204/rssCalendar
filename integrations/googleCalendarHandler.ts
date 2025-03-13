@@ -5,7 +5,7 @@ const API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
 const REDIRECT_URL = "https://localhost:8000/calendar/oauthcallback";
 
 //makes sure the above constants are assigned properly 
-function AssertEnv() {
+export function AssertEnv() {
   console.log("running assert");
   console.assert((CLIENT_ID && API_KEY), `.env not setup properly CLIENT_ID:${CLIENT_ID}, API_KEY${API_KEY}`);
 }
@@ -13,14 +13,12 @@ function AssertEnv() {
 // Discovery doc URL for APIs used by the quickstart
 //const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 // allows the extention of the tcpserver basehandler so we can create a new handler
-const { BaseHandler, GetContentHeaders } = require("./tcpServer.js");
-const url = require('url');
-// loads in the stuff from google
-
-const { google } = require('googleapis');
+import { BaseHandler, GetContentHeaders } from "./tcpServer";
+import url from 'url';
+import { google } from 'googleapis';
 
 
-class CalendarHandler extends BaseHandler {
+export class CalendarHandler extends BaseHandler {
   constructor() {
     super();
 
@@ -237,6 +235,3 @@ class CalendarHandler extends BaseHandler {
     // deletes any associated files, and removes the user from any active objects.  
   }
 }
-
-
-module.exports = { AssertEnv, CalendarHandler }

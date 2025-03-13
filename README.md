@@ -25,6 +25,7 @@ if you don't have openssl it's included as part of git, locate the git install d
 `\Git\usr\bin\openssl.exe` to get to the openssl filepath.  
 then rerun the above command with the absolute filepath to the openssl executable. `PATH\Git\user\bin\openssl.exe req -nodes -ne...`
 add the file path to the .cert and .key to the .env (will accept local paths eg: hidden/server.key);
+
 ```
 SERVER_CERT_DIR=[PATH_TO_SERVER.CERT (generated via openssl)]
 SERVER_KEY_DIR=[PATHT_TO_SERVER.KEY (generated via openssl )]
@@ -48,10 +49,15 @@ GOOGLE_CALENDAR_API_KEY=[API_KEY]
 &nbsp;
 
 # to run the server  
-while in the main directory simply
-`node --env-file=.env server.js`
+Install dependencies
 
-  
+`npm install` or `npm ci`
+
+while in the main directory simply
+`npm start`
+
+See `package.json`
+
   
 &nbsp;
 &nbsp;

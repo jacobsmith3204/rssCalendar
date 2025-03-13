@@ -5,7 +5,7 @@
       // It is faster to skip typechecking.
       // Remove if you want ts-node to do typechecking.
       "transpileOnly": true,
-  
+    
       "files": true,
   
       "compilerOptions": {
@@ -16,5 +16,8 @@
     },
     "compilerOptions": {
       // typescript options here
+       "target": "es2022",
+       "module": "NodeNext",
+       "moduleResolution": "NodeNext"
     }
   }

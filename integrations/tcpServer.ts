@@ -1,9 +1,9 @@
-const fs = require('fs');
-const url = require('url');
+import fs from 'fs';
+import url from 'url';
 
 
-const contexts = {};
-function AddContextHandlingToServer(server) {
+export const contexts = {};
+export function AddContextHandlingToServer(server) {
     server.findContext = function findContext(target) {
         var closestMatch = 0;
         var closestVal = 100000;
@@ -52,7 +52,7 @@ function AddContextHandlingToServer(server) {
     }
 }
 
-function GetContentHeaders(target) {
+export function GetContentHeaders(target) {
     if (!target)
         return { 'Content-Type': 'text/plain' };
 
@@ -74,7 +74,7 @@ function GetContentHeaders(target) {
 
 // a reprentation of a user/client.Request can be passed through the diffent methods.
 // contains the http request and response objects to comunicate back to the client, in adition to some functionality to simplify basic responses. 
-class TcpClient {
+export class TcpClient {
     constructor(req, res) {
         this.req = req; //request data 
         this.res = res; //response endpoint to finish the message
@@ -108,7 +108,7 @@ class TcpClient {
 
 
 // barebones handler, extend from this for new contexts/applications
-class BaseHandler {
+export class BaseHandler {
     // gives some handles to override in the subclasses
     Handle(client) {
         switch (client.req.method) {
@@ -144,5 +144,3 @@ class BaseHandler {
         client.SendResponse(405, 'Method Not Allowed');
     }
 }
-
-module.exports = { BaseHandler, TcpClient, AddContextHandlingToServer, contexts, GetContentHeaders }

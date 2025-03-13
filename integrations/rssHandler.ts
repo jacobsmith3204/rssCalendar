@@ -1,19 +1,19 @@
 // rss dependencies
-const RSS = require("rss");
+import RSS from "rss";
 
 // http server dependencies
-const {BaseHandler, GetContentHeaders} = require('./tcpServer.js'); 
-// 
-const fs = require('fs');
-const path = require('path');
-const url = require('url');
+import { BaseHandler, GetContentHeaders } from './tcpServer.ts';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
+
 
 const RSS_FILE_DIR = path.join(__dirname.replace("integrations", ""), 'rss'); // Directory to stored game files
 
 // a http server handler for our rss implementation 
 // handles some http GET requests for the RSS/[feed].xml objects. 
 // handles post requests for adding new RSS feeds. 
-class RSSHandler extends BaseHandler {
+export class RSSHandler extends BaseHandler {
     constructor() {
         super();
         this.rssFeeds = {};
@@ -104,5 +104,3 @@ feedOptions = {
     custom_elements:    optional array Put additional elements in the feed (node-xml syntax)
 }
 */
-
-module.exports = {RSSHandler}
