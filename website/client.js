@@ -88,13 +88,7 @@ function AddCalendarEventFromForm(event) {
 
     PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=addevent`, form).then(
         function onData(data) {
-            console.log("request for calendar data found:", data);
-
-            // gets only the summary from the data
-            var simplified = { summary: data.summary, items: [] }
-            data.items.forEach(item => { simplified.items.push(item.summary); });
-
-            // writes it to the results div. 
+            console.log("add calendar event callback:", data);
             document.getElementById('results').innerText = "added event";
         }
     );
@@ -102,9 +96,13 @@ function AddCalendarEventFromForm(event) {
 
 
 function GetCalendarInfo(event) {
+    /*
     event.preventDefault();
     const form = Object.fromEntries(new FormData(event.target)); 
     console.log(form);
+    */
+        
+    const form = {};
 
     PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=view` , form).then(
         function onData(data) {
