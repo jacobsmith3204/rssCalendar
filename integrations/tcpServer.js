@@ -119,7 +119,10 @@ class BaseHandler {
                 // waits till we have all the data concatinated before calling handlePost 
                 client.body = '';
                 client.req.on('data', chunk => client.body += chunk);
-                client.req.on('end', function () { this.HandlePost(client) }.bind(this));
+                client.req.on('end', function () { 
+                    client.data = JSON.parse(client.body); 
+                    this.HandlePost(client); 
+                }.bind(this));
                 break;
             default:
                 this.HandleExceptions(client);

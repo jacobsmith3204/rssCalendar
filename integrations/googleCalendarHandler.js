@@ -20,7 +20,6 @@ const url = require('url');
 const { google } = require('googleapis');
 
 
-
 class CalendarHandler extends BaseHandler {
   constructor() {
     super();
@@ -44,11 +43,20 @@ class CalendarHandler extends BaseHandler {
       case 'oauthcallback':
         this.HandleOauthCallback(client);
         break;
+      default:
+        console.error(`calendarHandler GET: couldn't find pathname ${pathname}`);
+        client.SendResponse(500, "couldnt find correct action");
+        break;
+    }
+  }
+  HandlePost(client) {
+    const pathname = client.url.pathname.replace('/calendar/', '');
+    switch (pathname) {
       case 'requestdata':
         this.HandleRequestData(client);
         break;
       default:
-        console.error(`couldn't find pathname ${pathname}`);
+        console.error(`calendarHandler POST: couldn't find pathname ${pathname}`);
         client.SendResponse(500, "couldnt find correct action");
         break;
     }
@@ -110,7 +118,7 @@ class CalendarHandler extends BaseHandler {
         <h1> success </h1>
         <script>
           window.onbeforeunload = () => {
-            window.opener.postMessage('{"type": "oauth successful", "id": "test"}' , "*");
+            window.opener.postMessage('{"type": "oauth successful", "id": "test", "action":"view"}' , "*");
           };
           window.close(); 
         </script>
@@ -129,9 +137,24 @@ class CalendarHandler extends BaseHandler {
   HandleRequestData(client) {
     if (client.queries['id'] == "test") {
       // once it recieves the data then it sends a response back
-      var fetchEvents = this.fetchListUpcomingEvents();
+
+
+      var fetchEvents;
+      switch (client.queries["action"]) {
+        case "view":
+          fetchEvents = this.fetchListUpcomingEvents(client.data); // gets all events 
+          break;
+        case "addevent":
+          fetchEvents = this.addNewEventToCalendar(client.data); // adds new event
+          break;
+        default:
+          fetchEvents = new Promise(resolve => { resolve({ data: `couldn't find action: ${client.queries["action"]}` }) });
+          break;
+      }
+
+
       fetchEvents.then(response => {
-        console.log("requested data found", response.data);
+        console.log("fetch events got response:", response.data);
         client.SendResponse(200, response.data);
       }).catch(e => {
         console.error(e);
@@ -141,19 +164,17 @@ class CalendarHandler extends BaseHandler {
   }
 
   async refreshAccessToken() {
-    const newTokens = await this.oauth2Client.refreshAccessToken();
+    const { newTokens } = await this.oauth2Client.refreshAccessToken();
     this.oauth2Client.setCredentials(newTokens.credentials);
   }
 
-  fetchListUpcomingEvents() {
+  fetchListUpcomingEvents(data) {
 
-
-
-     // creates a google calendar instance with authentication. 
-     // (creating here to make sure oauth2Client is the current version)
+    // creates a google calendar instance with authentication. 
+    // (creating here to make sure oauth2Client is the current version)
     this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     console.log("OAuth2 Credentials:", this.oauth2Client.credentials);
-    
+
 
     // returns a promise
     return this.calendar.events.list({
@@ -162,10 +183,50 @@ class CalendarHandler extends BaseHandler {
       maxResults: 10,
       singleEvents: true,
       orderBy: "startTime",
-      //key: API_KEY, //?? not sure if i need this 
     });
   }
+
+
+
+
+  addNewEventToCalendar(data) {
+
+    // creates a google calendar instance with authentication. 
+    // (creating here to make sure oauth2Client is the current version)
+    this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
+    console.log("OAuth2 Credentials:", this.oauth2Client.credentials);
+
+
+    // returns a promise
+    var today = new Date(); // gets current time right now?
+    var tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1); // sets end to date +1 should add one to the date. 
+    console.log("today:", today.toLocaleDateString(), "tomorrow:", tomorrow.toLocaleDateString())
+
+
+
+
+    return this.calendar.events.insert({
+      calendarId: data['id'],
+      resource: {
+        start: {
+          dateTime: new Date(data["start"]).toISOString(), // Correct structure
+          timeZone: "UTC", // Specify time zone (adjust if needed)
+        },
+        end: {
+          dateTime: new Date(data["end"]).toISOString(),
+          timeZone: "UTC",
+        },
+        summary: data['summary'], // Required field, give it a title
+        location: data['address'], 
+      },
+    });
+  }
+
   //#endregion
+
+
+
 
 
 

@@ -3,121 +3,98 @@
 
 <head>
     <title>rssCalendar</title>
-    <script src="/client.js"></script>
-    <!--script src="/googleCalendarIntergration.js"></script-->
-
+    <script src="client.js"></script>
+    <link rel="stylesheet" href="stylesheet.css">
     <meta charset="utf-8" />
 </head>
 
 <body>
-
-    <button onclick="PressedButton()"> Create RSS Feed</button>
-
-    <br>
-    <br>
-
-
-
-
-
-    <p>Google Calendar API Quickstart</p>
-
-    <!--Add buttons to initiate auth sequence and sign out (HIDDEN BY DEFAULT)-->
-
-
-
-    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
-
-    <div id="authorized">
-        SUCCESSFULLY AUTHORISED
-        <button id="authorize_button" onclick="getCalendarInfo()">Request </button>
-        <div id="results">
-        </div>
+    <div>
+        <h1>RSS stuff</h1>
+        <p> currently create an rss object, saves it to file (is not loaded from file on server start)</p>
+        <button onclick="PressedButton()"> Create RSS Feed</button>
     </div>
 
 
-    <pre id="content" style="white-space: pre-wrap;"></pre>
+    <div>
+        <h1>Google Calendar API Quickstart</h1>
+        <p>allows you to authorize and interact with the google calendar api</p>
+        <!--Add buttons to initiate auth sequence and sign out (HIDDEN BY DEFAULT)-->
+
+        <button id="authorize_button" onclick="HandleAuthClick()">Authorize</button>
+        <button id="signout_button" onclick="HandleSignoutClick()">Sign Out</button>
+        <!--pre id="content" style="white-space: pre-wrap;"></pre-->
+
+        <div id="calendar_oauth_authorized">
+            <h3> SUCCESSFULLY AUTHORISED </h3>
+
+
+            <span>
+                <form id="add_new_event" onsubmit="AddCalendarEventFromForm(event)">
+                    <h3> create new event </h3>
+                    <hr>
+                    <label for="id">event type</label>
+                    <select name="id"> <!-- calendarId-->
+                        <option value="primary">ysa activity</option> <!--cant find id "ysa events"-->
+                        <option value="ysa weekends">ysa dance</option>
+                        <option value="institute">institute activity</option>
+                        <option value="ysa fhe">fhe activity</option>
+                    </select>
+
+                    <label for="summary">title</label>
+                    <input type="text" name="summary">
+
+                    <label for="start">start time</label>
+                    <input type="datetime-local" name="start">
+                    
+                    <label for="end">end time</label>
+                    <input type="datetime-local" name="end">
+
+                    <label for="address">address</label>
+                    <input type="address" name="address">
+
+                    <span> <!-- make this span the whole forms width-->
+                        <input type="submit" value="Submit">
+                    </span>
+                </form>
+            </span>
+            <span>
+                <h3> request calendar data </h3>
+                <button id="request calendar info" onclick="GetCalendarInfo()"> request calendar data </button>
+                <div id="results">
+                </div>
+            </span>
+
+        </div>
+    </div>
+
+    <div>
+        <h1>IFrame to PNG</h1>
+        <p> eventually will host some stuff to create/format events which will be displayed in this iframe (or as a node
+            element)
+            had a button that will render it to a .png file and start a download for it.
+        </p>
+
+        <iframe id="myIframe" src='https://localhost:8000/stylesheet.css'></iframe>
+        <br>
+        <button id="authorize_button" onclick="DownloadIframeAsPng()">Download</button>
+    </div>
+
+
+
 
     <script>
-
-        var id;
-        function handleAuthClick() {
-
-            fetch(`${location.origin}/calendar/startoauth`)
-                .then(response => response.json()).then(onData) // Parse JSON response
-                .catch(error => console.error(error)); // Handle errors
-
-
-            function onData(data) {
-                console.log(data);
-                var url = data["oauthurl"];
-                console.log(url);
-                if (url != undefined) {
-                    // catches when the created window is closed. 
-                    window.addEventListener("message", (event) => {
-
-                        console.log(event, "event data", event.data);
-                        // expexts the message to be a json object 
-                       
-                        var obj = JSON.parse(event.data);
-                        console.log(event.data, obj);
-                        if(!obj)
-                            return; 
-
-                        if (obj.type == "oauth successful") {                        
-                            id = obj.id; // assign an id to this object from the callback redirect when it closes to finish the verification. 
-
-                            console.log("closed window Sucessful Oauth");
-                            document.getElementById('authorized').style.visibility = 'visible';
-                            document.getElementById('authorize_button').style.visibility = 'hidden';
-                        }
-                        else {
-                            console.log("closed window");
-                        }
-                    });
-
-                    var redirect = window.open(url, "_blank");
-                    console.log("opening window");
-                }
-            }
-        }
-
-        function getCalendarInfo() {
-            fetch(`${location.origin}/calendar/requestdata?id=${id}`)
-                .then(response => response.json()).then(onData)
-                .catch(error => console.error(error)); // Handle errors
-
-            function onData(data) { 
-                console.log("request for calendar data found:",data);
-
-                // gets only the summary from the data
-                var simplified = {summary: data.summary, items: []}
-                data.items.forEach(item => {simplified.items.push(item.summary); });
-
-                // writes it to the results div. 
-                document.getElementById('results').innerText = JSON.stringify(simplified);
-            }
-        }
-
-        function handleSignoutClick() {
-            // does nothing
-        }
-
         //document.getElementById('authorize_button').style.visibility = 'hidden';
         document.getElementById('signout_button').style.visibility = 'hidden';
-        document.getElementById('authorized').style.visibility = 'hidden';
+        document.getElementById('calendar_oauth_authorized').style.visibility = ' collapse';
+
+
+
+
+
+
 
     </script>
-    <style>
-        body {
-            color: rgb(168, 168, 168);
-            font-size: 1.3rem;
-            background-color: rgb(34, 34, 34);
-
-        }
-    </style>
-
 </body>
 
 </html>
