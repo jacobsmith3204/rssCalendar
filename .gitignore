@@ -1,3 +1,4 @@
 rss/*
 .env
 hidden/*
+node_modules/*

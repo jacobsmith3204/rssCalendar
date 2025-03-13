@@ -1,7 +1,14 @@
 {
+  "scripts":{
+    "start": "node --env-file=.env  -r ts-node/register server.ts"
+  },
   "dependencies": {
     "googleapis": "^146.0.0",
     "instagram-private-api": "^1.46.1",
     "rss": "^1.2.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
   }
 }
