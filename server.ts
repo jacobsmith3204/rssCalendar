@@ -12,6 +12,7 @@ import url from 'url';
 import { BaseHandler, TcpClient, findContext, contexts } from './integrations/tcpServer';
 import { RSSHandler } from './integrations/rssHandler';
 import { CalendarHandler } from './integrations/googleCalendarHandler';
+import { InstagramHandler } from './integrations/instagramHandler';
 
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files
@@ -40,11 +41,10 @@ server.listen(PORT, () => {
     contexts["/rss"] = new RSSHandler();
     contexts["/calendar"] = new CalendarHandler();
     contexts["/"] = new FileHandler();
+    contexts["/instagram"] = new InstagramHandler(); 
 });
 
 console.log("Started file server");
-
-
 
 
 

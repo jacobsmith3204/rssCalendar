@@ -14,13 +14,8 @@ const RSS_FILE_DIR = path.join(__dirname.replace("integrations", ""), 'rss'); //
 // handles some http GET requests for the RSS/[feed].xml objects. 
 // handles post requests for adding new RSS feeds. 
 export class RSSHandler extends BaseHandler {
-    rssFeeds;
-    constructor() {
-        super();
-        this.rssFeeds = {};
-        // !! this should probably load in the existing RSS feeds from the 'RSS_FILE_DIR' location
-    }
-
+    rssFeeds = {};
+   
     // sends the rss/feed.xml file back 
     HandleGet(client) {
         const rssFilePath = path.join(RSS_FILE_DIR, client.url.pathname.replace(`/rss/`, "")); // Remove leading "/rss/"

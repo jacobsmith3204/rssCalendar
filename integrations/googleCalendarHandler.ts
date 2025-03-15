@@ -13,7 +13,7 @@ export function AssertEnv() {
 // Discovery doc URL for APIs used by the quickstart
 //const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 // allows the extention of the tcpserver basehandler so we can create a new handler
-import { BaseHandler, GetContentHeaders } from "./tcpServer";
+import { BaseHandler, GetContentHeaders, TcpClient } from "./tcpServer";
 import url from 'url';
 import { google } from 'googleapis';
 
@@ -35,7 +35,7 @@ export class CalendarHandler extends BaseHandler {
 
   
   // HANDLES ALL INCOMING GET REQUESTS TO THE CALENDAR HANDLER 
-  HandleGet(client) {
+  HandleGet(client : TcpClient) {
     const pathname = client.url.pathname.replace('/calendar/', '');
     switch (pathname) {
       case 'startoauth':
@@ -102,15 +102,12 @@ export class CalendarHandler extends BaseHandler {
     const { tokens } = await this.oauth2Client.getToken(code); // needs {} around the token apparently
     this.oauth2Client.setCredentials(tokens);
 
-
-
     this.oauth2Client.on('tokens', (tokens) => {
       if (tokens.refresh_token) {
         console.log("New Refresh Token:", tokens.refresh_token);
       }
       console.log("New Access Token:", tokens.access_token);
     });
-
   }
 
   onSuccess = `<!DOCTYPE html>
@@ -169,7 +166,7 @@ export class CalendarHandler extends BaseHandler {
     this.oauth2Client.setCredentials(newTokens.credentials);
   }
 
-  fetchListUpcomingEvents(data) {
+  fetchListUpcomingEvents(data: object) {
 
     // creates a google calendar instance with authentication. 
     // (creating here to make sure oauth2Client is the current version)
@@ -190,22 +187,12 @@ export class CalendarHandler extends BaseHandler {
 
 
 
-  addNewEventToCalendar(data) {
-
+  addNewEventToCalendar(data : object) {
+    
     // creates a google calendar instance with authentication. 
     // (creating here to make sure oauth2Client is the current version)
     this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     console.log("OAuth2 Credentials:", this.oauth2Client.credentials);
-
-
-    // returns a promise
-    var today = new Date(); // gets current time right now?
-    var tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1); // sets end to date +1 should add one to the date. 
-    console.log("today:", today.toLocaleDateString(), "tomorrow:", tomorrow.toLocaleDateString())
-
-
-
 
     return this.calendar.events.insert({
       calendarId: data['id'],
@@ -224,6 +211,14 @@ export class CalendarHandler extends BaseHandler {
     });
   }
 
+
+  /*
+    // returns a promise
+    var today = new Date(); // gets current time right now?
+    var tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1); // sets end to date +1 should add one to the date. 
+    console.log("today:", today.toLocaleDateString(), "tomorrow:", tomorrow.toLocaleDateString())
+  */
   //#endregion
 
 

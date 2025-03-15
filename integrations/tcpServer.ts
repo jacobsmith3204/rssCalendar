@@ -1,9 +1,10 @@
 import fs from 'fs';
 import url from 'url';
-
+import https from 'https';
+import { IncomingMessage, ServerResponse } from 'http';
 
 export const contexts = {};
-export function findContext(target) {
+export function findContext(target): BaseHandler {
     var closestMatch = 0;
     var closestVal = 100000;
     var currentVal;
@@ -51,7 +52,7 @@ export function findContext(target) {
 }
 
 
-export function GetContentHeaders(target = undefined) {
+export function GetContentHeaders(target = ""): object {
     if (!target)
         return { 'Content-Type': 'text/plain' };
 
@@ -80,7 +81,10 @@ export class TcpClient {
     url;
     queries;
 
-    constructor(req, res) {
+    body;// text version of post request body
+    data;// json version of post request body
+
+    constructor(req: IncomingMessage, res: ServerResponse<IncomingMessage>) {
         this.req = req; //request data 
         this.res = res; //response endpoint to finish the message
         this.url = url.parse(req.url, true);
@@ -88,7 +92,7 @@ export class TcpClient {
     }
 
 
-    SendResponse(code, data, headers = undefined) {
+    SendResponse(code: Number, data, headers = undefined) {
         if (!headers)
             headers = GetContentHeaders();
         this.res.writeHead(code, headers);
@@ -97,7 +101,7 @@ export class TcpClient {
         this.res.end(data);
     }
 
-    SendFile(filePath) {
+    SendFile(filePath: string) {
         console.log("sending file", filePath);
         fs.readFile(filePath, function NormalFile(err, data) {
             if (err) {
@@ -115,7 +119,7 @@ export class TcpClient {
 // barebones handler, extend from this for new contexts/applications
 export class BaseHandler {
     // gives some handles to override in the subclasses
-    Handle(client) {
+    Handle(client: TcpClient): void {
         switch (client.req.method) {
             case 'GET':
                 this.HandleGet(client);
@@ -136,15 +140,15 @@ export class BaseHandler {
     }
 
     // overrideable functions for the subsclasses 
-    HandleGet(client) {
+    HandleGet(client: TcpClient): void {
         console.error("'HandleGet' not implemented for", this.constructor.name);
         client.SendResponse(405, 'Method Not Allowed');
     }
-    HandlePost(client) {
+    HandlePost(client: TcpClient): void {
         console.error("'HandlePost' not implemented for", this.constructor.name);
         client.SendResponse(405, 'Method Not Allowed');
     }
-    HandleExceptions(client) {
+    HandleExceptions(client: TcpClient): void {
         console.log("couldn't handle", client.req.method);
         client.SendResponse(405, 'Method Not Allowed');
     }
