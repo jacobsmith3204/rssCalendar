@@ -3,4 +3,4 @@ rss/*
 hidden/*
 node_modules/*
 *.traineddata
-intergrations/ocr/*
+integrations/ocr/*
