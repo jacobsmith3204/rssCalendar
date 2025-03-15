@@ -19,6 +19,9 @@ import { google } from 'googleapis';
 
 
 export class CalendarHandler extends BaseHandler {
+  oauth2Client;
+  calendar; 
+
   constructor() {
     super();
 
@@ -30,7 +33,7 @@ export class CalendarHandler extends BaseHandler {
     );
   }
 
-
+  
   // HANDLES ALL INCOMING GET REQUESTS TO THE CALENDAR HANDLER 
   HandleGet(client) {
     const pathname = client.url.pathname.replace('/calendar/', '');

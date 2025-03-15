@@ -3,56 +3,55 @@ import url from 'url';
 
 
 export const contexts = {};
-export function AddContextHandlingToServer(server) {
-    server.findContext = function findContext(target) {
-        var closestMatch = 0;
-        var closestVal = 100000;
-        var currentVal;
+export function findContext(target) {
+    var closestMatch = 0;
+    var closestVal = 100000;
+    var currentVal;
 
-        var contextKeys = Object.keys(contexts);
-        for (let i = 0; i < contextKeys.length; i++) {
-            currentVal = levenshtein(target, contextKeys[i]);
-            //console.log("testing: ", target ,"against", contextKeys[i], "result", currentVal); 
-            if (currentVal < closestVal) {
-                closestMatch = i;
-                closestVal = currentVal;
-            }
-            if (closestVal == 0)
-                break;
+    var contextKeys = Object.keys(contexts);
+    for (let i = 0; i < contextKeys.length; i++) {
+        currentVal = levenshtein(target, contextKeys[i]);
+        //console.log("testing: ", target ,"against", contextKeys[i], "result", currentVal); 
+        if (currentVal < closestVal) {
+            closestMatch = i;
+            closestVal = currentVal;
         }
-        //console.log("closest context with val: ",  closestVal, contextKeys[closestMatch]); 
-        return Object.values(contexts)[closestMatch];
+        if (closestVal == 0)
+            break;
+    }
+    //console.log("closest context with val: ",  closestVal, contextKeys[closestMatch]); 
+    return Object.values(contexts)[closestMatch] as BaseHandler;
 
-        // function to find closest matching string 
-        function levenshtein(a, b) {
-            // 
-            if (a === b) return 0;
-            if (!a.startsWith(b))
-                return 100000;
-            // should have already filtered out most case by here. 
-            const matrix = Array(a.length + 1)
-                .fill(null)
-                .map(() => Array(b.length + 1).fill(null));
+    // function to find closest matching string 
+    function levenshtein(a, b) {
+        // 
+        if (a === b) return 0;
+        if (!a.startsWith(b))
+            return 100000;
+        // should have already filtered out most case by here. 
+        const matrix = Array(a.length + 1)
+            .fill(null)
+            .map(() => Array(b.length + 1).fill(null));
 
-            for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
-            for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+        for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+        for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
 
-            for (let i = 1; i <= a.length; i++) {
-                for (let j = 1; j <= b.length; j++) {
-                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j] + 1,    // Deletion
-                        matrix[i][j - 1] + 1,    // Insertion
-                        matrix[i - 1][j - 1] + cost // Substitution
-                    );
-                }
+        for (let i = 1; i <= a.length; i++) {
+            for (let j = 1; j <= b.length; j++) {
+                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,    // Deletion
+                    matrix[i][j - 1] + 1,    // Insertion
+                    matrix[i - 1][j - 1] + cost // Substitution
+                );
             }
-            return matrix[a.length][b.length];
         }
+        return matrix[a.length][b.length];
     }
 }
 
-export function GetContentHeaders(target) {
+
+export function GetContentHeaders(target = undefined) {
     if (!target)
         return { 'Content-Type': 'text/plain' };
 
@@ -75,19 +74,25 @@ export function GetContentHeaders(target) {
 // a reprentation of a user/client.Request can be passed through the diffent methods.
 // contains the http request and response objects to comunicate back to the client, in adition to some functionality to simplify basic responses. 
 export class TcpClient {
+
+    req; //request data 
+    res; //response endpoint to finish the message
+    url;
+    queries;
+
     constructor(req, res) {
         this.req = req; //request data 
         this.res = res; //response endpoint to finish the message
         this.url = url.parse(req.url, true);
-        this.queries = this.url.query; 
+        this.queries = this.url.query;
     }
 
 
-    SendResponse(code, data, headers) {
+    SendResponse(code, data, headers = undefined) {
         if (!headers)
             headers = GetContentHeaders();
         this.res.writeHead(code, headers);
-        if(typeof data === 'object' &&  !(data instanceof Buffer || data instanceof Uint8Array))
+        if (typeof data === 'object' && !(data instanceof Buffer || data instanceof Uint8Array))
             data = JSON.stringify(data);
         this.res.end(data);
     }
@@ -119,9 +124,9 @@ export class BaseHandler {
                 // waits till we have all the data concatinated before calling handlePost 
                 client.body = '';
                 client.req.on('data', chunk => client.body += chunk);
-                client.req.on('end', function () { 
-                    client.data = JSON.parse(client.body); 
-                    this.HandlePost(client); 
+                client.req.on('end', function () {
+                    client.data = JSON.parse(client.body);
+                    this.HandlePost(client);
                 }.bind(this));
                 break;
             default:
@@ -140,7 +145,7 @@ export class BaseHandler {
         client.SendResponse(405, 'Method Not Allowed');
     }
     HandleExceptions(client) {
-        console.log("couldn't handle", req.method);
+        console.log("couldn't handle", client.req.method);
         client.SendResponse(405, 'Method Not Allowed');
     }
 }

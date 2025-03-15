@@ -2,7 +2,7 @@
 import RSS from "rss";
 
 // http server dependencies
-import { BaseHandler, GetContentHeaders } from './tcpServer.ts';
+import { BaseHandler, GetContentHeaders } from './tcpServer';
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
@@ -14,6 +14,7 @@ const RSS_FILE_DIR = path.join(__dirname.replace("integrations", ""), 'rss'); //
 // handles some http GET requests for the RSS/[feed].xml objects. 
 // handles post requests for adding new RSS feeds. 
 export class RSSHandler extends BaseHandler {
+    rssFeeds;
     constructor() {
         super();
         this.rssFeeds = {};
@@ -39,7 +40,7 @@ export class RSSHandler extends BaseHandler {
                 this.CreateRSS(client, data);
                 break;
             default:
-                this.SendResponse(400, GetContentHeaders(), "error");
+                client.SendResponse(400, "error");
                 break;
         }
     }
