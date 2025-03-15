@@ -87,3 +87,6 @@ button:hover {
 div[style*="visibility: collapse"] {
     height: 0;
   }
+  #preview {
+    width: 100%;
+  }

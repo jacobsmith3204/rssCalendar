@@ -61,8 +61,8 @@
             <span>
                 <h3> request calendar data </h3>
                 <button id="request calendar info" onclick="GetCalendarInfo()"> request calendar data </button>
-                <div id="results">
-                </div>
+                <p id="calendarResults">
+                </p>
             </span>
 
         </div>
@@ -80,21 +80,23 @@
         <button id="authorize_button" onclick="DownloadIframeAsPng()">Download</button>
     </div>
 
+    <div>
+        <h1>OCR</h1>
+        <p> 
+            image to text stuff, for pulling from instagram and trying to create an event  
+        </p>
 
+        <input type="file" id="fileInput" accept="image/*" onchange="OCRFileChanged()">
+        <button id="authorize_button" onclick="OCRImage()">Try get text from image</button>
+        <img id="preview" style="display: none;">
+        <p id="ocrResults"><p>
 
+    </div>
 
     <script>
         //document.getElementById('authorize_button').style.visibility = 'hidden';
         document.getElementById('signout_button').style.visibility = 'hidden';
         document.getElementById('calendar_oauth_authorized').style.visibility = ' collapse';
-
-
-
-
-
-
-
     </script>
 </body>
-
 </html>

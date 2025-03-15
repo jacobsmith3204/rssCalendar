@@ -32,7 +32,7 @@ const rssFeedObj = {
 }
 function PressedButton() {
     PostJSON(
-        `${location.origin}/rss`, 
+        `${location.origin}/rss`,
         { type: "createRSS", data: rssFeedObj }
     ).then(response => {
         console.log(response);
@@ -81,15 +81,15 @@ function CompleteOauthRedirect(event) {
 }
 
 
-function AddCalendarEventFromForm(event) {    
+function AddCalendarEventFromForm(event) {
     event.preventDefault();
-    const form = Object.fromEntries(new FormData(event.target)); 
+    const form = Object.fromEntries(new FormData(event.target));
     console.log(form);
 
     PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=addevent`, form).then(
         function onData(data) {
             console.log("add calendar event callback:", data);
-            document.getElementById('results').innerText = "added event";
+            document.getElementById('calendarResults').innerText = "added event";
         }
     );
 }
@@ -101,10 +101,10 @@ function GetCalendarInfo(event) {
     const form = Object.fromEntries(new FormData(event.target)); 
     console.log(form);
     */
-        
+
     const form = {};
 
-    PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=view` , form).then(
+    PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=view`, form).then(
         function onData(data) {
             console.log("request for calendar data found:", data);
 
@@ -113,7 +113,7 @@ function GetCalendarInfo(event) {
             data.items.forEach(item => { simplified.items.push(item.summary); });
 
             // writes it to the results div. 
-            document.getElementById('results').innerText = JSON.stringify(simplified);
+            document.getElementById('calendarResults').innerText = JSON.stringify(simplified);
         }
     );
     return false;
@@ -195,10 +195,55 @@ function DownloadIframeAsPng() {
 
 //#endregion
 
+//#region ocr 
+
+
+
+async function OCRImage() {
+
+    const fileInput = document.getElementById('fileInput');
+    var file = fileInput.files[0];
+
+    console.log(file);
+
+    const reader = new FileReader();
+    reader.onloadend = function () {
+        const base64String = reader.result.split(',')[1];
+        PostJSON(`${location.origin}/ocr/${file.name}`, { image: base64String }, {
+            'Content-Type': 'application/octet-stream', // Binary data
+            'X-File-Name': file.name // Send filename in headers
+        }).then(data => {
+            const preview = document.getElementById('ocrResults');
+            preview.innerHTML =data["response"];
+        });
+    }
+    reader.readAsDataURL(file);
+}
+function OCRFileChanged() {
+    const preview = document.getElementById('preview');
+    const fileInput = document.getElementById('fileInput');
+    var file = fileInput.files[0];
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+    } 
+    reader.readAsDataURL(file);
+}
+
+//#endregion
+
+
+
+
+
+
 
 //#region helper functions 
 
-async function PostJSON(url, data , headers =  { "Content-Type": "application/json;charset=UTF-8" }) {
+async function PostJSON(url, data, headers = { "Content-Type": "application/json;charset=UTF-8" }) {
     if (typeof data === 'object') // &&  !(data instanceof Buffer || data instanceof Uint8Array))
         data = JSON.stringify(data);
     return FetchJSON(url, { method: 'POST', headers, body: data })
