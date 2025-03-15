@@ -14,6 +14,9 @@ SERVER_KEY_DIR=[PATHT_TO_SERVER.KEY (generated via openssl )]
 GOOGLE_CALENDAR_CLIENT_ID=[CLIENT_ID]
 GOOGLE_CALENDAR_CLIENT_SECRET=[CLIENT_SECRET]
 GOOGLE_CALENDAR_API_KEY=[API_KEY]
+
+IG_USERNAME=[INSTAGRAM_USERNAME]
+IG_PASSWORD=[INSTAGRAM_PASSWORD]
 ```
 
 
@@ -41,6 +44,12 @@ then copy-paste the relevant data into the .env file
 GOOGLE_CALENDAR_CLIENT_ID=[CLIENT_ID]
 GOOGLE_CALENDAR_CLIENT_SECRET=[CLIENT_SECRET]
 GOOGLE_CALENDAR_API_KEY=[API_KEY]
+```
+## instagram api
+add a correct username and password to the .env file to allow the server to post to Instagram.   
+```
+IG_USERNAME=[INSTAGRAM_USERNAME]
+IG_PASSWORD=[INSTAGRAM_PASSWORD]
 ```
 
 &nbsp;
