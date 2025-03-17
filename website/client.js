@@ -43,7 +43,6 @@ function PressedButton() {
 
 
 //#region  google calendar stuff
-var id;
 function HandleAuthClick() {
     FetchJSON(`${location.origin}/calendar/startoauth`).then(
         function StartOauthRedirect(data) {
@@ -70,11 +69,11 @@ function CompleteOauthRedirect(event) {
         return;
 
     if (obj.type == "oauth successful") {
-        id = obj.id; // assign an id to this object from the callback redirect when it closes to finish the verification. 
+        // assigns an id to this object from the callback redirect when it closes to finish the verification. 
+        localStorage.setItem("calendarid", obj.id);
 
         console.log("closed window Sucessful Oauth");
-        document.getElementById('calendar_oauth_authorized').style.visibility = 'visible';
-        document.getElementById('authorize_button').style.visibility = 'hidden';
+        CalendarSwitchToAuthorised();
     }
     else
         console.log("closed window");
@@ -86,7 +85,7 @@ function AddCalendarEventFromForm(event) {
     const form = Object.fromEntries(new FormData(event.target));
     console.log(form);
 
-    PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=addevent`, form).then(
+    PostJSON(`${location.origin}/calendar/requestdata?id=${localStorage.getItem("calendarid")}&action=addevent`, form).then(
         function onData(data) {
             console.log("add calendar event callback:", data);
             document.getElementById('calendarResults').innerText = "added event";
@@ -104,7 +103,7 @@ function GetCalendarInfo(event) {
 
     const form = {};
 
-    PostJSON(`${location.origin}/calendar/requestdata?id=${id}&action=view`, form).then(
+    PostJSON(`${location.origin}/calendar/requestdata?id=${localStorage.getItem("calendarid")}&action=view`, form).then(
         function onData(data) {
             console.log("request for calendar data found:", data);
 
@@ -121,6 +120,20 @@ function GetCalendarInfo(event) {
 
 function HandleSignoutClick() {
     // does nothing
+}
+
+function ValidateLastLoginId() {
+
+    FetchJSON(`${location.origin}/calendar/validatelastloginid?id=${localStorage.getItem("calendarid")}`)
+        .then(data => {
+            if (data["response"] == "successful")
+                CalendarSwitchToAuthorised();
+        })
+}
+
+function CalendarSwitchToAuthorised() {
+    document.getElementById('calendar_oauth_authorized').style.visibility = 'visible';
+    document.getElementById('authorize_button').style.visibility = 'hidden';
 }
 //#endregion
 
@@ -214,7 +227,7 @@ async function OCRImage() {
             'X-File-Name': file.name // Send filename in headers
         }).then(data => {
             const preview = document.getElementById('ocrResults');
-            preview.innerHTML =data["response"];
+            preview.innerHTML = data["response"];
         });
     }
     reader.readAsDataURL(file);
@@ -229,7 +242,7 @@ function OCRFileChanged() {
     reader.onload = function (e) {
         preview.src = e.target.result;
         preview.style.display = "block";
-    } 
+    }
     reader.readAsDataURL(file);
 }
 
