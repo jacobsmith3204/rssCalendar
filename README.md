@@ -45,6 +45,10 @@ GOOGLE_CALENDAR_CLIENT_ID=[CLIENT_ID]
 GOOGLE_CALENDAR_CLIENT_SECRET=[CLIENT_SECRET]
 GOOGLE_CALENDAR_API_KEY=[API_KEY]
 ```
+
+You also need to create a `hidden/logins.json` file and chuck an (empty array?) in it.
+This stores who is logged in.
+
 ## instagram api
 add a correct username and password to the .env file to allow the server to post to Instagram.   
 ```

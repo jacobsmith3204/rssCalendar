@@ -2,6 +2,9 @@ const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 const API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
 
+
+import path, { resolve } from 'path';
+
 const REDIRECT_URL = "https://localhost:8000/calendar/oauthcallback";
 const LOGINS_PATH = path.join(__dirname.replace('integrations', ''), "/hidden/logins.json");
 //makes sure the above constants are assigned properly 
@@ -18,7 +21,6 @@ import url from 'url';
 import { google } from 'googleapis';
 import { Console, dir, log } from "console";
 import fs from 'fs';
-import path, { resolve } from 'path';
 import { promises } from "dns";
 
 
