@@ -3,6 +3,8 @@
     "start": "node --env-file=.env  -r ts-node/register server.ts"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.43",
+    "@langchain/ollama": "^0.2.0",
     "googleapis": "^146.0.0",
     "instagram-private-api": "^1.46.1",
     "rss": "^1.2.2",
