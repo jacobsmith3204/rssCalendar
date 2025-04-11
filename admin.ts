@@ -17,7 +17,7 @@ export var logins = {};
 
 export async function Initialise() {
     await LoadAllClientLoginsFromFile();
-    console.log(logins);
+    //console.log(logins);
 }
 
 
@@ -65,7 +65,7 @@ export async function LoadAllClientLoginsFromFile() {
     try {
         const data = fs.readFileSync(LOGINS_PATH, 'utf8');
         const tokens = JSON.parse(data);
-        console.log("read json from file ", tokens);
+        //console.log("read json from file ", tokens);
 
         if (!tokens) {
             console.error(`error reading login file at: ${LOGINS_PATH} make sure it exists and is in json format`);
@@ -108,7 +108,7 @@ export async function refreshAccessToken(oauthClient : OAuth2Client, token) {
     oauthClient.setCredentials(token);
     try {
         const { token } = await oauthClient.getAccessToken();
-        console.log("new token:", token);
+        //console.log("new access token:", token);
         oauthClient.setCredentials({ access_token: token });
         return token;
     }
