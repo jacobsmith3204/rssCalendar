@@ -3,7 +3,10 @@ import url from 'url';
 import https from 'https';
 import { IncomingMessage, ServerResponse } from 'http';
 
+// server.contexts are added to this
 export const contexts = {};
+
+// searches the contexts keys to find the closest matching value, required to completely match the context string. 
 export function findContext(target): BaseHandler {
     var closestMatch = 0;
     var closestVal = 100000;
@@ -52,6 +55,7 @@ export function findContext(target): BaseHandler {
 }
 
 
+// uses a switch statement to return the correct headers based on the targets file extention eg: .png
 export function GetContentHeaders(target = ""): object {
     if (!target)
         return { 'Content-Type': 'text/plain' };
@@ -120,22 +124,27 @@ export class TcpClient {
 export class BaseHandler {
     // gives some handles to override in the subclasses
     Handle(client: TcpClient): void {
-        switch (client.req.method) {
-            case 'GET':
-                this.HandleGet(client);
-                break;
-            case 'POST':
-                // waits till we have all the data concatinated before calling handlePost 
-                client.body = '';
-                client.req.on('data', chunk => client.body += chunk);
-                client.req.on('end', function () {
-                    client.data = JSON.parse(client.body);
-                    this.HandlePost(client);
-                }.bind(this));
-                break;
-            default:
-                this.HandleExceptions(client);
-                break;
+        try {
+            switch (client.req.method) {
+                case 'GET':
+                    this.HandleGet(client);
+                    break;
+                case 'POST':
+                    // waits till we have all the data concatinated before calling handlePost 
+                    client.body = '';
+                    client.req.on('data', chunk => client.body += chunk);
+                    client.req.on('end', function () {
+                        client.data = JSON.parse(client.body);
+                        this.HandlePost(client);
+                    }.bind(this));
+                    break;
+                default:
+                    this.HandleExceptions(client);
+                    break;
+            }
+        } catch (e) {
+            console.error(e);
+            client.res
         }
     }
 

@@ -14,6 +14,8 @@ import { RSSHandler } from './integrations/rssHandler';
 import { CalendarHandler } from './integrations/googleCalendarHandler';
 import { InstagramHandler } from './integrations/instagramHandler';
 import { OCRHandler } from './integrations/ocr';
+import { EventHandler } from './eventHandler';
+import { Initialise as InitialiseAdminOauth } from './admin';
 
 const PORT = 8000;
 const WEBSITE_FILE_DIR = path.join(__dirname, 'website'); // Directory to stored game files
@@ -44,21 +46,24 @@ server.listen(PORT, () => {
     contexts["/"] = new FileHandler();
     contexts["/instagram"] = new InstagramHandler(); 
     contexts["/ocr"] = new OCRHandler(); 
+    contexts["/event"] = new EventHandler(); 
 });
 
 console.log("Started file server");
 
-
+// load in aouth stuff from file.
+InitialiseAdminOauth(); 
 
 
 // the simplified http file server, on a get request finds the file 
 // (access limited to the website_file_dir, with access to all the subfiles via their path in the request url)
 class FileHandler extends BaseHandler {
-    HandleGet(client) {
+    HandleGet(client: TcpClient): void {
         const filePath = path.join(WEBSITE_FILE_DIR, client.url.pathname.substring(1)); // Remove leading "/"
         client.SendFile(filePath);
     }
 }
+
 
 
 /*

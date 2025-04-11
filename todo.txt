@@ -1,0 +1,56 @@
+// create an event class/struct that will carry all relevant data for each event.
+create a dictionary that contains each event type and their expected destinations.
+(the event class will referance the dictionary and pull in the destinations, storing all destinations that it has successfully posted the event at) 
+
+/*
+use the meta properties to imbed the image and relevant data to the
+        <meta property="og:title" content="TITLE\nDATA">
+        <meta property="og:image" content="/profilePic.jpg"> <!-- https://i.imgur.com/mKJev3g.jpeg -->
+*/
+
+create a link spesific handler that will contain each event. 
+a generated boiler-plate html document with the details filled in for them will be created and the links to them will directly pull the assoiated files. (requesting updates where needed)
+on load the events will be pulled from the rss feed/rss file, new event
+
+
+
+
+
+[APP STRUCTURE]
+
+server.ts : tcpServer.ts
+  "server.ts" hosts the actual server instance
+  "tcpServer.ts" provided additional functionalty to be used across the multiple files.
+  the additional functionality allows for "contexts" allowing a spesific "handler" to be bound to a spesified path. 
+  includes a default file handler that can access any file within the "website/" directory
+
+
+each of the additional contexts provide access to their own INTERGRATIONS (useful for debugging or sending a direct request)
+intergrations/* 
+
+   ocr (small api extention to to image to text translation)
+
+   google calendar (handles verification required and sends events to a google calendar, can also read them)
+        // need to debloat the openid userstuff into the admin file. 
+
+   rss (allows the creation of an rss object (event), and can save the data to file to then be called later)
+
+   instagram (allows posting to instagram )
+  
+
+admin.ts 
+   contains a list of the users emails/ids, and a list of endpoints they have the correct authentication for. 
+   in addition will contain all the admin features... eg: 
+      sharing event creation control. 
+      // allows you to create an event, will still need correct permissions to push to the recipents. 
+      // by default if you created something you will have editing, deletion and sharing permissions.
+
+      recipient admin access 
+      // admin controls for recipents, allows for adding users to the whitelist for the recipents they have control over. 
+      // 
+   
+
+eventHandler.ts
+   contains the methods for creating an event to then send to all associated recipients 
+   convert rss xml to event, to allow for updating the files.  
+    

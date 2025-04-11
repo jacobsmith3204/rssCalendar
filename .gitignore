@@ -4,3 +4,4 @@ hidden/*
 node_modules/*
 *.traineddata
 integrations/ocr/*
+shared_links/*

@@ -1,0 +1,201 @@
+:root {
+    --item-panel: white;
+    --error: rgb(253, 201, 201);
+    --sidebar: rgb(255, 255, 255);  
+    --header: rgb(187, 182, 162);  
+}
+
+body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    background: rgb(184, 184, 184);
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    overflow-y: hidden;
+}
+
+#header {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-around;
+    gap: 1rem;
+    background: var(--header);
+    z-index: 1;
+}
+
+#header>span {
+    min-width: 5rem;
+    text-align: center;
+    padding-block: 0.5rem;
+}
+
+scrollArea {
+    display: grid;
+    position: sticky;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    grid-template-columns: min-content auto;
+    gap: 1rem;
+
+}
+
+sidebar {
+    background: var(--sidebar);
+    height: 100%;
+    width: 1rem;
+    border-radius: 1rem;
+}
+
+timeline {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 1rem;
+}
+
+item {
+    display: inline-grid;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.618;
+    background: var(--item-panel);
+    overflow: hidden;
+    grid-template-columns: 1fr 1.618fr;
+    grid-template-rows: 100%;
+    border-radius: 0.2rem;
+    /*box-shadow: black 0px 0px 100px -40px;*/
+}
+
+imagecontrols {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    width: 38.195302843%;
+    /*white gradent*/
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 10%, rgba(255, 255, 255, 0.4) 25%, rgba(255, 255, 255, 0.7) 45%, rgba(255, 255, 255, 0.9) 70%, rgba(255, 255, 255, 1) 100%);
+    box-sizing: border-box;
+    padding: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+item > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom;
+    background: white;
+    box-shadow: inset white 0px 0px 1rem 1rem;
+
+}
+
+item>content {
+    display: grid;
+    --item-margin-size: calc(0px + 0.382fr);
+    grid-template-rows: 3rem 1.618fr 1fr;
+    font-size: 2rem;
+}
+
+
+content>div {
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+.event-locations {
+    position: relative;
+    display: block;
+    grid-auto-flow: row;
+    max-height: 100%;
+    overflow: auto;
+    background: lightgray; 
+    box-sizing: border-box;
+    padding: 0.5rem;
+    /*box-shadow: 0px 0px 0.2rem 0.2rem lightgrey;*/
+    box-shadow: inset 0px 0px 1rem 0.2rem lightgrey;
+    z-index: 0;
+    gap:0.5rem;
+
+
+    scrollbar-color: rgb(65, 65, 65) transparent;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable; /*makes the scollbar padding always exist */
+}
+
+
+
+.event-locations>ol {
+    text-decoration: none;
+    display: inline-grid;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0;
+    gap: 0.5rem;    
+    height: min-content;
+}
+.event-locations>ol :first-child {
+    background: rgb(255, 255, 255);
+    width: 100%;
+    height: 100%;
+    padding-inline: 0.1rem;
+    text-align: center;
+    align-content: center
+}
+
+
+.event-locations>ol>li {
+    background: var(--item-panel);
+    text-decoration: none;
+    display: block;
+    background: white;
+    border-radius: 0.4rem;
+    padding: 0.2rem;
+    font-size: 1.5rem;
+}
+
+.event-locations>ol>li.error {
+    background: var(--error);
+    position: relative;
+}
+
+.event-locations>ol>li.error::after {
+    content:"!";
+    display: block;
+    position: absolute;
+    background: yellow !important;
+    color: red;
+    width: 1em;
+    height: 1em;
+    font-size: 1rem;
+    text-align: center;
+    border-radius: 0.5em;
+    font-weight: bolder;
+    right: -0.5rem;
+    bottom: -0.7rem;      
+    background: var(--error);
+    z-index: 1;
+}
+
+.event-topbar {
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 0.5rem;
+
+}
+

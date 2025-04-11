@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- 
+    OVERRIDE KEYS
+
+    title
+    eventImagePath
+    shareLink
+    subscribeLink
+    description
+    -->
+
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="timeline.css">
+    <script src="https://kit.fontawesome.com/74093a2bd0.js" crossorigin="anonymous"></script>
+    
+    <meta charset="utf-8" />
+    <meta name="language" content="english">
+
+    <meta name="description" content="{{description}}">
+
+    <meta property="og:type" content="">
+    <meta property="og:site_name" content="RSS CALENDAR">
+    <meta property="og:title" content="{{title}}">
+    <meta property="og:url" content="/">
+    <meta property="og:image" content="{{eventImagePath}}"> 
+    <meta property="og:description" content="{{description}}">
+</head>
+
+<body>
+    <h1>{{title}}</h1>
+
+    <a href="{{shareLink}}"> add to calendar </a>    
+    <a href="{{subscribeLink}}"> subscribe to calendar </a>
+
+    <img alt="" style="aspect-ratio: 1.91235 / 1; flex-grow: 1; height: auto; max-width: 100%; object-fit: cover;"  src="{{eventImagePath}}">
+</body>
+</html>
