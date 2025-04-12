@@ -1,8 +1,8 @@
 import path from "path";
 import fs from 'fs';
-import { BaseHandler, TcpClient } from "./integrations/tcpServer";
+import { BaseHandler, TcpClient } from "./tcpServer";
 
-const BOILERPLATE_DIR = path.join(__dirname, 'integrations/sharedpageboilerplate.html');
+const BOILERPLATE_DIR = path.join(__dirname, 'sharedpageboilerplate.html');
 const SHARED_LINK_DIR = path.join(__dirname, 'shared_links'); // Directory to stored game files
 
 let boilerPlateHtml: string;
@@ -19,7 +19,7 @@ export class EventHandler extends BaseHandler {
     }
     // reads in the boilerplate for the event pages intended
     async Initialise() {
-        console.log(BOILERPLATE_DIR);
+        //console.log(BOILERPLATE_DIR);
         boilerPlateHtml = fs.readFileSync(BOILERPLATE_DIR).toString();
     }
 
@@ -37,6 +37,7 @@ export class EventHandler extends BaseHandler {
         var event = new Event(data["title"] || "default event title", []);
         event.sendToRecipents("");
     }
+
 }
 
 

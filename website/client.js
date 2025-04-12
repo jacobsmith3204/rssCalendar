@@ -44,7 +44,7 @@ function PressedButton() {
 
 //#region  google calendar stuff
 function HandleAuthClick() {
-    FetchJSON(`${location.origin}/calendar/startoauth`).then(
+    FetchJSON(`${location.origin}/oauth/startoauth`).then(
         function StartOauthRedirect(data) {
             var url = data["oauthurl"];
             console.log(data, url);
@@ -124,7 +124,7 @@ function HandleSignoutClick() {
 
 function ValidateLastLoginId() {
 
-    FetchJSON(`${location.origin}/calendar/validatelastloginid?id=${localStorage.getItem("calendarid")}`)
+    FetchJSON(`${location.origin}/oauth/validatelastloginid?id=${localStorage.getItem("calendarid")}`)
         .then(data => {
             if (data["response"] == "successful")
                 CalendarSwitchToAuthorised();

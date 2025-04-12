@@ -39,15 +39,14 @@ SERVER_KEY_DIR=[PATHT_TO_SERVER.KEY (generated via openssl )]
 setup a new google cloud project, and setup aouth, follow this tutorial if you need some help 
 https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred  
 
+console.cloud.google -> api -> credentals -> oauth2 clientID's authorised redirect URIs = https://localhost:8000/oauth/oauthcallback
+
 then copy-paste the relevant data into the .env file  
 ```
 GOOGLE_CALENDAR_CLIENT_ID=[CLIENT_ID]
 GOOGLE_CALENDAR_CLIENT_SECRET=[CLIENT_SECRET]
 GOOGLE_CALENDAR_API_KEY=[API_KEY]
 ```
-
-You also need to create a `hidden/logins.json` file and chuck an (empty array?) in it.
-This stores who is logged in.
 
 ## instagram api
 add a correct username and password to the .env file to allow the server to post to Instagram.   
