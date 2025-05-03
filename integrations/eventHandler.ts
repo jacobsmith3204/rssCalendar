@@ -79,6 +79,7 @@ export class Event {
 
     }
 
+
     static fromFile() {
         // adds from file to this. activities. 
         //this.activities; 

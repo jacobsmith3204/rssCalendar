@@ -26,7 +26,7 @@ export class CalendarHandler extends BaseHandler {
 
 
   // process a clients post request, makes sure the request query has a userid, then fetches the appropriate 
-  async HandleRequestData(client) {
+  async HandleRequestData(client : TcpClient) : Promise<void>{
     const userid = client.queries['id'];
     // uses the associated client data to get a completed oauthclient. 
     const oauth2Client = await fetchAuthorisedClient(userid);
@@ -66,23 +66,16 @@ export class CalendarHandler extends BaseHandler {
 }
 
 
-
-
-// !!! 
-async function fetchAuthorisedClient(userid): Promise<OAuth2Client> {
+async function fetchAuthorisedClient(userid : string): Promise<OAuth2Client> {
   if (!logins[userid])
     return null;
   const tokens = logins[userid];  // gets the tokens 
-
-  
 
   // creates a new oauth client and sets its credentials to the token from the user that created it. 
   const oauth2Client = GetOAuthClient();
   oauth2Client.setCredentials(tokens);
   return await oauth2Client;
 }
-
-
 
 
 async function fetchListUpcomingEvents(data: object, auth: OAuth2Client): Promise<object> {
@@ -96,6 +89,7 @@ async function fetchListUpcomingEvents(data: object, auth: OAuth2Client): Promis
     orderBy: "startTime",
   });
 }
+
 async function addNewEventToCalendar(data: object, auth: OAuth2Client): Promise<object> {
   // creates the new event (returns as a promise)
   const calendar = google.calendar({ version: 'v3', auth: auth });
